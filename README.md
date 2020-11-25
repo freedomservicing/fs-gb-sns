@@ -3,8 +3,9 @@
 # <p align="center"><b>gb_sns</b></p>
 <p align="center"><b><i>General Bytes Database Scraper</i></b></p>
 
-# Use
-* Make sure you have MySQL Connector/Python installed on your local system or the import wont work
+# Dependencies
+* Make sure you have MySQL Connector/Python installed on your local system or the import wont work. You need to manually download this (probably)
+* `pip install firebase`
 
 # Dev Env
 * The `launch.json` in `.vscode` should be cross-platform if you use VSCode for your environment.
