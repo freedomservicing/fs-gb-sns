@@ -5,16 +5,16 @@ from firebase import firebase
 import json
 
 
-'''Return a json loaded with necessary FB and mysql credentials'''
-def retrieve_config(credentials_file_path):
+'''Return a json file'''
+def retrieve_file(file_path):
 
-    with open(credentials_file_path) as f:
-        config  = json.load(f)
+    with open(file_path) as f:
+        file  = json.load(f)
 
-    return config
+    return file
 
 
-'''Return a mysqlDB connection '''
+'''Return a mysqlDB connection'''
 def get_mysqlDB_connection(config):
 
     dbCon = None
@@ -47,7 +47,10 @@ def main():
     # Remove .TEMPLATE from crednetials.json.TEMPLATE and populate as necessary
     CREDENTIALS_FILE_PATH = "credentials.json"
 
-    config = retrieve_config(CREDENTIALS_FILE_PATH)
+    SETTINGS_FILE_PATH = "settings.json"
+
+    config = retrieve_file(CREDENTIALS_FILE_PATH)
+    settings = retrieve_file(SETTINGS_FILE_PATH)
 
     fb = get_fb_connection(config)
     db = get_mysqlDB_connection(config)
