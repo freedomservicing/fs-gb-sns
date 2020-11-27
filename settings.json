@@ -1,3 +1,20 @@
 {
-  "firstRun": true
+  "firstRun": true,
+  "attributeTable": "transactionrecord",
+  "attributes": [
+    "cellphoneused",
+    "cryptoaddress",
+    "cashamount",
+    "cashcurrency",
+    "discountcode",
+    "cryptoamount",
+    "cryptocurrency",
+    "cryptodiscountamount",
+    "detail",
+    "servertime",
+    "terminaltime",
+    "status",
+    "type",
+    "ratesourceprice"
+  ]
 }

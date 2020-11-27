@@ -23,8 +23,8 @@ def get_mysqlDB_connection(config):
         dbCon = connector.connect(
         user = config.get("mysqlUser"),
         password = config.get("mysqlPass"),
-        host = config.get("mysqlUser"),
-        database = config.get("mysqlUser"))
+        host = config.get("mysqlHost"),
+        database = config.get("mysqlDB"))
     except connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             print("Wrong user or password!")
@@ -35,11 +35,20 @@ def get_mysqlDB_connection(config):
 
     return dbCon
 
-
 '''Return an FB connection using provided json config'''
-def get_fb_connection(config_file):
-    return firebase.FirebaseApplication(config_file.get("databaseURL"), None)
+def get_fb_connection(config):
+    return firebase.FirebaseApplication(config.get("databaseURL"), None)
 
+'''Return a simple query request using provided json settings'''
+def get_query(settings):
+
+    queryString = "SELECT"
+    for attribute in settings.get("attributes"):
+        queryString = queryString + " " + attribute + ","
+
+    queryString = queryString[:-1] + " FROM " + settings.get("attributeTable") + ";"
+
+    return (queryString)
 
 '''Establish the pipe between GB server and automatically forward to FB'''
 def main():
@@ -55,8 +64,11 @@ def main():
     fb = get_fb_connection(config)
     db = get_mysqlDB_connection(config)
 
-    print("\nTesting Firebase Connection: \n", fb.get("Machines", None), "\n")
-
+    cursor = db.cursor()
+    query = get_query(settings)
+    
+    print(query)
+    print(cursor.execute(get_query(settings)))
 
 if __name__ == "__main__":
     main()
