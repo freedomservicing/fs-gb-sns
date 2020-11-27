@@ -70,5 +70,8 @@ def main():
     print(query)
     print(cursor.execute(query))
 
+    for row in cursor:
+        print(row)
+
 if __name__ == "__main__":
     main()
