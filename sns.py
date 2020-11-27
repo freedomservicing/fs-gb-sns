@@ -46,9 +46,9 @@ def get_query(settings):
     for attribute in settings.get("attributes"):
         queryString = queryString + " " + attribute + ","
 
-    queryString = queryString[:-1] + " FROM " + settings.get("attributeTable") + ";"
+    queryString = queryString[:-1] + " FROM " + settings.get("attributeTable")
 
-    return (queryString)
+    return queryString
 
 '''Establish the pipe between GB server and automatically forward to FB'''
 def main():
@@ -66,9 +66,9 @@ def main():
 
     cursor = db.cursor()
     query = get_query(settings)
-    
+
     print(query)
-    print(cursor.execute(get_query(settings)))
+    print(cursor.execute(query))
 
 if __name__ == "__main__":
     main()
