@@ -1,7 +1,7 @@
 {
   "firstRun": true,
   "firestoreAddress": "fgcomplianceportal",
-  "organization": 00000
+  "organization": "00000",
   "queries": {
     "transactions": {
       "attributeTable": "transactionrecord",

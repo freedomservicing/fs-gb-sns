@@ -88,13 +88,20 @@ class gb_pipe:
     """Execute a query search on the mysql DB
     :param query: valid mysql query
     :returns: list of observations
+
+    If entries is left as default, the entire db will be queries
     """
-    def __submit_query(self, query):
+    def __submit_query(self, query, entries=-1):
         cursor = self.__mysqlDB.cursor()
         cursor.execute(query)
         mysql_data = []
-        for observation in cursor:
-            mysql_data.append(observation)
+        if entries == -1:
+            for observation in cursor:
+                mysql_data.append(observation)
+        else:
+            while entries > 0:
+                mysql_data.append(cursor.fetchone())
+                entries -= 1
         return mysql_data
 
 

@@ -24,3 +24,7 @@ class file_manager:
         with open(self.__file_path) as f:
             file = json.load(f)
         return file
+
+    def write_json(self, json_content, output_file_path):
+        with open(output_file_path) as f:
+            json.dump(json_content, output_file_path)
