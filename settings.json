@@ -1,24 +1,28 @@
 {
   "firstRun": true,
   "firestoreAddress": "fgcomplianceportal",
-  "attributeTable": "transactionrecord",
-  "attributes": [
-    "cellphoneused",
-    "cryptoaddress",
-    "cashamount",
-    "cashcurrency",
-    "discountcode",
-    "cryptoamount",
-    "cryptocurrency",
-    "cryptodiscountamount",
-    "detail",
-    "servertime",
-    "terminaltime",
-    "terminal_id",
-    "status",
-    "type",
-    "ratesourceprice"
-  ],
+  "queries": {
+    "transactions": {
+      "attributeTable": "transactionrecord",
+      "attributes": [
+        "cellphoneused",
+        "cryptoaddress",
+        "cashamount",
+        "cashcurrency",
+        "discountcode",
+        "cryptoamount",
+        "cryptocurrency",
+        "cryptodiscountamount",
+        "detail",
+        "servertime",
+        "terminaltime",
+        "terminal_id",
+        "status",
+        "type",
+        "ratesourceprice"
+      ]
+    }
+  },
   "relationships": {
     "amount_fiat_entered": [
       "cashamount",
@@ -57,7 +61,7 @@
       "integer"
     ],
     "time": [
-      null,
+      "terminaltime",
       "string"
     ],
     "phone_number": [

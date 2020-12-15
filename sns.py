@@ -1,11 +1,10 @@
-"""Backed pipe for GB -> FB
+"""Backend pipe for GB -> FB
 
 :author: Caden Koscinski
 :author: Noah Martino
 :see: settings.json.TEMPLATE
 :see: credentials.json.TEMPLATE
 """
-
 
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -99,11 +98,11 @@ class gb_pipe:
     :see: settings.json/attributes
     :returns: formatted mysql search query
     """
-    def __get_query(self):
+    def __get_query(self, query_name):
         queryString = "SELECT"
-        for attribute in self.__settings.get("attributes"):
+        for attribute in self.__settings["queries"][query_name]["attributes"]:
             queryString = queryString + " " + attribute + ","
-        queryString = queryString[:-1] + " FROM " + self.__settings.get("attributeTable")
+        queryString = queryString[:-1] + " FROM " + self.__settings["queries"][query_name]["attributeTable"]
         return queryString
 
 
@@ -126,8 +125,8 @@ class gb_pipe:
     :see: settings.json/attributes
     :returns: dict form of all observations
     """
-    def __restructure_query_response(self, mysql_observations):
-        attributes = self.__settings["attributes"]
+    def __restructure_query_response(self, query_name, mysql_observations):
+        attributes = self.__settings["queries"][query_name]["attributes"]
         mysql_bound_data = []
         for observation in mysql_observations:
             attributes_index = 0
@@ -143,8 +142,10 @@ class gb_pipe:
     :see: settings.json
     :returns: formatted JSON with keys binding mysql values
     """
-    def get_formatted_query(self):
-        return self.__restructure_query_response(self.__submit_query(self.__get_query()))
+    def get_formatted_query(self, query_name):
+
+        # TODO: Remove Hard-Coded Query
+        return self.__restructure_query_response(query_name, self.__submit_query(self.__get_query(query_name)))
 
 
     """Return the status of the pipe - True if both GB and FS connections are live
@@ -158,7 +159,7 @@ class gb_pipe:
     :param mysql_observation: formatted mysql_observation from an entry generated
     by self.__restructure_query_response()
     :see: settings.json/relationships
-    :returns:
+    :returns: restructured json aligned with FS structure
     """
     def __sanitize_data(self, mysql_observation):
 
@@ -209,8 +210,8 @@ class gb_pipe:
     :returns: FS compatible JSON based upon preconfigured relationships
     :see: settings.json/relationships
     """
-    def get_fs_submission(self):
-        return self.__prepare_fs_submission(self.get_formatted_query())
+    def get_fs_submission(self, query_name):
+        return self.__prepare_fs_submission(self.get_formatted_query(query_name))
 
 
     """Commit data to the FS
@@ -292,7 +293,11 @@ def main():
         # TODO: Implement listener and regulate data submissions
 
         # Temporary code to verify functionality
-        data = gb_pipe_manager.get_pipe().get_fs_submission()
+
+        # Hard-Coded Request
+        query_name = "transactions"
+
+        data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
         data_index = 0
         max_index = 4
         while (data_index <= max_index):
