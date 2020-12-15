@@ -189,7 +189,7 @@ class gb_pipe:
                     # else:
                     #     print("No type identified: Defaulting to raw input")
 
-                    transaction_data[assoc_key] = mysql_value
+                    transaction_data[key] = mysql_value
 
         return transaction_data
 
