@@ -10,30 +10,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import mysql.connector as connector
 from mysql.connector import errorcode
+from file_manager import file_manager
 import os
 import json
-
-
-"""Manage a specified file"""
-class file_manager:
-
-    __file_path = None
-
-
-    """Constructor
-    :param file_path: absolute or relative file path
-    """
-    def __init__(self, file_path):
-        self.__file_path = file_path
-
-
-    """Read the specified file
-    :returns: dict of json-formatted file
-    """
-    def read_json(self):
-        with open(self.__file_path) as f:
-            file = json.load(f)
-        return file
 
 
 """Pipe connecting and facilitating the transfer of data between the GB mysql DB
