@@ -1,2 +1,4 @@
 cache.json
 credentials.json
+transaction_cache.json
+machine_id_cache.json
