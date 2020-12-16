@@ -325,3 +325,27 @@ def main():
 # Main execution
 if __name__ == "__main__":
     main()
+
+# Listener Class
+class listener():
+
+
+    def createListener(settings_filepath, ):
+        # OOPS, this isn't very OOP
+        CONF_FILE_PATH = settings_filepath
+        CACHE_FILE_PATH = "listenerCache.json"
+        conf_manager = file_manager(CONF_FILE_PATH)
+        cache_manager = file_manager(CACHE_FILE_PATH)
+        if conf_manager.is_functional and cache_manager.is_functional:
+            conf_file = conf_manager.read_json()
+            cache_file = cache_manager.read_json()
+            listener_column = conf_file.get("listener_column")
+            listener_interval = conf_file.get("listener_interval")
+
+
+
+
+
+
+
+    

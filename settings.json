@@ -22,7 +22,10 @@
         "status",
         "type",
         "ratesourceprice"
-      ]
+      ],
+      "listener_column": "id",
+      "listener_interval": 60
+
     },
     "terminal_information": {
       "attributeTable": "terminal",
