@@ -330,7 +330,9 @@ if __name__ == "__main__":
 class listener():
 
 
-    def createListener(settings_filepath, ):
+    def __init__(self)
+
+    def createListener(settings_filepath):
         # OOPS, this isn't very OOP
         CONF_FILE_PATH = settings_filepath
         CACHE_FILE_PATH = "listenerCache.json"
@@ -339,8 +341,14 @@ class listener():
         if conf_manager.is_functional and cache_manager.is_functional:
             conf_file = conf_manager.read_json()
             cache_file = cache_manager.read_json()
+            queries = conf_file.get("queries")
+            for entry in queries:
+                if "listener_column" in entry and "listener_interval" in entry:
+                    listener
             listener_column = conf_file.get("listener_column")
             listener_interval = conf_file.get("listener_interval")
+            for 
+
 
 
 
