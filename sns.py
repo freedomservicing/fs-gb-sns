@@ -2,6 +2,7 @@
 
 :author: Caden Koscinski
 :author: Noah Martino
+:see: https://docs.google.com/document/d/1CmbGNYDnQZ6idU0OOlEq3P8plQmYn6p8NcZcOXrTZAw/edit
 :see: settings.json.TEMPLATE
 :see: credentials.json.TEMPLATE
 """
@@ -10,6 +11,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import mysql.connector as connector
 from mysql.connector import errorcode
+from id_gen import id_generator, id
 from file_manager import file_manager
 import os
 import json
@@ -273,25 +275,29 @@ def main():
     CREDENTIALS_FILE_PATH = "credentials.json"
     SETTINGS_FILE_PATH = "settings.json"
 
-    gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
+    idg = id_generator("transaction_cache.json")
 
-    if gb_pipe_manager.get_pipe().is_functional:
-        # TODO: Implement listener and regulate data submissions
+    idg.increment_transaction_id()
 
-        # Temporary code to verify functionality
-
-        # Hard-Coded Request
-        query_name = "transactions"
-
-        data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-        data_index = 0
-        max_index = 4
-        while (data_index <= max_index):
-            print("\n", data[data_index])
-            data_index += 1
-
-    else:
-        print("Unable to establish pipe manager. Check configuration and try again.")
+    # gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
+    #
+    # if gb_pipe_manager.get_pipe().is_functional:
+    #     # TODO: Implement listener and regulate data submissions
+    #
+    #     # Temporary code to verify functionality
+    #
+    #     # Hard-Coded Request
+    #     query_name = "transactions"
+    #
+    #     data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+    #     data_index = 0
+    #     max_index = 4
+    #     while (data_index <= max_index):
+    #         print("\n", data[data_index])
+    #         data_index += 1
+    #
+    # else:
+    #     print("Unable to establish pipe manager. Check configuration and try again.")
 
 
 # Main execution

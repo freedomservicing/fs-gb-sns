@@ -8,13 +8,18 @@ import json
 class file_manager:
 
     __file_path = None
-
+    __functional = True
 
     """Constructor
     :param file_path: absolute or relative file path
     """
     def __init__(self, file_path):
         self.__file_path = file_path
+        try:
+            self.read_json()
+        except:
+            print("\nCannot Read the File at:", self.__file_path)
+            self.__functional = False
 
 
     """Read the specified file
@@ -25,6 +30,11 @@ class file_manager:
             file = json.load(f)
         return file
 
+
     def write_json(self, json_content, output_file_path):
-        with open(output_file_path) as f:
-            json.dump(json_content, output_file_path)
+        with open(output_file_path, 'w') as f:
+            json.dump(json_content, f)
+
+
+    def is_functional(self):
+        return self.__functional
