@@ -297,7 +297,7 @@ def main():
             simple_id = str(entry["simple_id"])
             reformatted_terminal_id[simple_id] = str(entry["serial"])
         for entry in reformatted_terminal_id:
-            print("\n", entry, reformatted_terminal_id[entry])
+            # print("\n", entry, reformatted_terminal_id[entry])
             pass
         print("\n")
         # END
@@ -312,10 +312,10 @@ def main():
 
         data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
         data_index = 0
-        max_index = 4
+        max_index = 20
         while (data_index <= max_index):
-            print("\n", data[data_index])
-            # print("\n", data[data_index], idm_instance.issue_id(data[data_index], reformatted_terminal_id))
+            # print("\n", data[data_index])
+            print("\n", data[data_index], idm_instance.issue_id(data[data_index], reformatted_terminal_id))
             data_index += 1
 
     else:

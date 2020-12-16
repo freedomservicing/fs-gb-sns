@@ -66,7 +66,7 @@ class id_manager:
         machine_brand = self.__settings_file.read_json()["machine_brand"]
 
         gb_id = observation_json["machine_id"]
-        gb_serial = gb_terminal_json[gb_id]
+        gb_serial = gb_terminal_json[str(gb_id)]
 
         cache_json = self.__transaction_id_cache_file.read_json()
 
@@ -81,6 +81,7 @@ class id_manager:
             # Adds new entry to the cache for each identified machine
             machine_id = self.__increment_id(cache_json["last_machine_id"])
             cache_json["last_machine_id"] = machine_id
+            cache_json["machines"][gb_serial] = {}
             cache_json["machines"][gb_serial]["brand"] = machine_brand
             cache_json["machines"][gb_serial]["machine_id"] = cache_json["last_machine_id"]
             transaction_id = "000000"
@@ -89,7 +90,7 @@ class id_manager:
         # Update cache
         self.__transaction_id_cache_file.write_json(cache_json)
 
-        nid = id({"organization": organization, "brand": machine_brand, "machine_id": machine_id, "transaction": transaction_id})
+        nid = id({"organization": organization, "brand": machine_brand, "machine": machine_id, "transaction": transaction_id})
 
         return nid.get_id_string()
 
