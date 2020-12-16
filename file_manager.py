@@ -10,6 +10,7 @@ class file_manager:
     __file_path = None
     __functional = True
 
+
     """Constructor
     :param file_path: absolute or relative file path
     """
@@ -31,7 +32,9 @@ class file_manager:
         return file
 
 
-    def write_json(self, json_content, output_file_path):
+    def write_json(self, json_content, output_file_path=None):
+        if output_file_path == None:
+            output_file_path = self.__file_path
         with open(output_file_path, 'w') as f:
             json.dump(json_content, f)
 

@@ -11,7 +11,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 import mysql.connector as connector
 from mysql.connector import errorcode
-from id_gen import id_generator, id
+from id_manager import id_manager
 from file_manager import file_manager
 import os
 import json
@@ -274,30 +274,52 @@ def main():
     # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
     CREDENTIALS_FILE_PATH = "credentials.json"
     SETTINGS_FILE_PATH = "settings.json"
+    ID_CACHE_PATH = "transaction_id_cache.json"
 
-    idg = id_generator("transaction_cache.json")
+    gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
 
-    idg.increment_transaction_id()
+    idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
 
-    # gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-    #
-    # if gb_pipe_manager.get_pipe().is_functional:
-    #     # TODO: Implement listener and regulate data submissions
-    #
-    #     # Temporary code to verify functionality
-    #
-    #     # Hard-Coded Request
-    #     query_name = "transactions"
-    #
-    #     data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-    #     data_index = 0
-    #     max_index = 4
-    #     while (data_index <= max_index):
-    #         print("\n", data[data_index])
-    #         data_index += 1
-    #
-    # else:
-    #     print("Unable to establish pipe manager. Check configuration and try again.")
+    if gb_pipe_manager.get_pipe().is_functional:
+
+        # TEST AREA: Retrieve Terminal Info
+        query_name = "terminal_information"
+        data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+        for entry in data:
+            # print("\n", entry)
+            pass
+        print("\n")
+        # END
+
+        # TEST AREA: ID Distribution
+        reformatted_terminal_id = {}
+        for entry in data:
+            simple_id = str(entry["simple_id"])
+            reformatted_terminal_id[simple_id] = str(entry["serial"])
+        for entry in reformatted_terminal_id:
+            print("\n", entry, reformatted_terminal_id[entry])
+            pass
+        print("\n")
+        # END
+
+        # TODO: Implement listener and regulate data submissions
+
+        # Temporary code to verify functionality
+
+        # Hard-Coded Request
+
+        query_name = "transactions"
+
+        data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+        data_index = 0
+        max_index = 4
+        while (data_index <= max_index):
+            print("\n", data[data_index])
+            # print("\n", data[data_index], idm_instance.issue_id(data[data_index], reformatted_terminal_id))
+            data_index += 1
+
+    else:
+        print("Unable to establish pipe manager. Check configuration and try again.")
 
 
 # Main execution

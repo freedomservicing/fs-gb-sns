@@ -1,0 +1,10 @@
+{
+  "machines": {
+    "serial": {
+      "brand": "0"
+      "machine_id": "00000"
+      "last_transaction_id": "000000"
+    }
+  },
+  "last_machine_id": "00000"
+}
