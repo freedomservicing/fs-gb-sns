@@ -5,7 +5,7 @@ from file_manager import file_manager
 class Listener:
 
     def __init__(self, connector, queryConfigJson):
-        self.__connector = __connector
+        self.__connector = connector
         self.__queryConfigJson = queryConfigJson
 
         self.__table = self.__queryConfigJson["attributeTable"]
@@ -22,7 +22,7 @@ class Listener:
         self.__columnList = ', '.join(self.__queryConfigJson["attributes"])
 
         self.__CACHE_FILE_PATH = "listenerCache.json"
-        self.__cache_manager = file_manager(CACHE_FILE_PATH)
+        self.__cache_manager = file_manager(self.__CACHE_FILE_PATH)
         self.__cursor = self.__connector.cursor()
 
         # An ID for logging purposes. Ex: listener_transactions_id_60
@@ -39,7 +39,7 @@ class Listener:
             while True:
                 # TODO: Figure out proper caching for the interpolation after the > to actually work.
                 query = ("SELECT {columnList} FROM {self.table} WHERE {self.activeColumn} > {See Comment Above} LIMIT {self.PageSize}")
-                resultSet =  cursor.execute(query)
+                resultSet =  self.__cursor.execute(query)
                 resultSetSize = len(resultSet)
                 lastId = resultSet.keys(-1)
 
