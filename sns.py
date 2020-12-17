@@ -154,7 +154,11 @@ class gb_pipe:
 
         for key in mysql_observation:
 
-            key_value = str(mysql_observation[key])
+            key_value = mysql_observation[key]
+            if key_value == 0:
+                key_value = "0"
+            else:
+                key_value = str(key_value)
 
             if relationships != None:
                 if key in relationships:
