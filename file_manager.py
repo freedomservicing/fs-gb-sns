@@ -16,11 +16,12 @@ class file_manager:
     """
     def __init__(self, file_path):
         self.__file_path = file_path
-        try:
-            self.read_json()
-        except:
-            print("\nCannot Read the File at:", self.__file_path)
-            self.__functional = False
+        self.read_json()
+        # try:
+        #     self.read_json()
+        # except:
+        #     print("\nCannot Read the File at:", self.__file_path)
+        #     self.__functional = False
 
 
     """Read the specified file

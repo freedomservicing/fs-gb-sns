@@ -154,13 +154,13 @@ class gb_pipe:
 
         for key in mysql_observation:
 
-            key_value = mysql_observation[key]
+            key_value = str(mysql_observation[key])
 
             if relationships != None:
                 if key in relationships:
                     key = relationships[key]
 
-        data[key] = key_value
+            data[str(key)] = key_value
 
         return data
 
@@ -172,8 +172,10 @@ class gb_pipe:
     """
     def __prepare_fs_submission(self, mysql_observations, query_name):
         prepped_data = []
+
         for observation in mysql_observations:
-            prepped_data.append(self.__sanitize_data(observation), self.__settings["queries"][query_name]["relationships"])
+            prepped_data.append(self.__sanitize_data(observation, self.__settings["queries"][query_name]["relationships"]))
+
         return prepped_data
 
 
@@ -194,6 +196,8 @@ class gb_pipe:
         current_collection = self.__fsDB.collection(endpoint)
 
         for entry in data:
+
+            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
 
             current_document = collection.document(id_manager.issue_id(entry, meta_json))
             current_document.set(entry)
@@ -270,14 +274,14 @@ class first_run_operator:
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
         idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
 
-        settings_file_manager = file_manager(SETTINGS_FILE_PATH)
+        settings_manager = file_manager(SETTINGS_FILE_PATH)
         settings_json = settings_manager.read_json()
 
         if gb_pipe_manager.get_pipe().is_functional():
 
             reformatted_terminal_id = None
 
-            if query_name == "transactions":
+            if self.__query_name == "transactions":
                 # TEST AREA: Retrieve Terminal Info
                 q_name = "terminal_information"
                 tdata = gb_pipe_manager.get_pipe().get_fs_submission(q_name)
@@ -296,11 +300,11 @@ class first_run_operator:
                 print("\n")
                 # END
 
-            data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+            data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
 
-            endpoint = settings_json["queries"][query_name]["endpoint"]
+            endpoint = settings_json["queries"][self.__query_name]["endpoint"]
 
-            # gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+            gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -343,10 +347,11 @@ def main():
     if settings_manager.is_functional():
         settings_json = settings_manager.read_json()
         for query in settings_json["queries"]:
-            if query["first_run"] and query != "terminal_information":
+            query_json = settings_json["queries"][query]
+            if query_json["first_run"] and query != "terminal_information":
+                fr_operator = first_run_operator(query)
                 settings_json["queries"][query]["first_run"] = False
                 settings_manager.write_json(settings_json)
-                fr_operator = first_run_operator(query)
                 print("\nFirst Run Complete for Query:", query)
 
 
