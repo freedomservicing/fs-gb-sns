@@ -11,7 +11,7 @@
       "attributes": [
         "id",
         "serialnumber"
-      ]
+      ],
       "relationships": {
         "id": "simple_id",
         "serialnumber": "serial"
