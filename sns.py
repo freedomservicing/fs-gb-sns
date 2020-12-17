@@ -266,10 +266,77 @@ ONLY TO BE INSTANCED FROM MAIN OF SNS
 class first_run_operator:
 
     def __init__(self):
-        self.initial_draw()
+        self.__initial_draw()
 
-    def initial_draw(self):
+    def __initial_draw(self):
+
+        # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
+        CREDENTIALS_FILE_PATH = "credentials.json"
+        SETTINGS_FILE_PATH = "settings.json"
+        ID_CACHE_PATH = "transaction_id_cache.json"
+
+        gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
+
+        idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
+
+        if gb_pipe_manager.get_pipe().is_functional():
+
+            # # TEST AREA: Retrieve Terminal Info
+            # query_name = "terminal_information"
+            # data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+            # for entry in data:
+            #     # print("\n", entry)
+            #     pass
+            # print("\n")
+            #
+            # reformatted_terminal_id = {}
+            # for entry in data:
+            #     simple_id = str(entry["simple_id"])
+            #     reformatted_terminal_id[simple_id] = str(entry["serial"])
+            # for entry in reformatted_terminal_id:
+            #     # print("\n", entry, reformatted_terminal_id[entry])
+            #     pass
+            # print("\n")
+            # # END
+
+            # TODO: Implement listener and regulate data submissions
+            # reference_settings = file_manager(SETTINGS_FILE_PATH)
+            # listener_managers = []
+            # for query in reference_settings.read_json()["queries"]:
+            #     connector = gb_pipe_manager.get_pipe()
+            #     listener_managers.append(listener_manager(listener(connector, query)))
+
+            # Temporary code to verify functionality
+
+            # Hard-Coded Request
+
+            query_name = "transactions"
+
+            data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+            data_index = 0
+            max_index = 20
+            while (data_index <= max_index):
+                # print("\n", data[data_index])
+                print("\n", data[data_index], idm_instance.issue_id(data[data_index], reformatted_terminal_id))
+                data_index += 1
+
+        else:
+            print("Unable to establish pipe manager. Check configuration and try again.")
+
+
+"""Execute listener procedure
+
+ONLY TO BE INSTANCED FROM MAIN OF SNS
+"""
+class listener_operator:
+
+    def __init__(self):
+        self.__conduct_listening()
+
+    def __conduct_listening(self):
+        # Listener operation
         pass
+
 
 """Establish an active listener and pipe between the GB backend and CaaS-FS frontend
 
@@ -284,63 +351,16 @@ def main():
     standard_cache_manager = file_manager(STANDARD_CACHE_PATH)
 
     if standard_cache_manager.is_functional():
-        if standard_cache_manager.read_json()["first_run"]:
+        standard_cache_json = standard_cache_manager.read_json()
+        if standard_cache_json["first_run"]:
+            standard_cache_json["first_run"] = False
+            standard_cache_manager.write_json(standard_cache_json)
             fr_operator = first_run_operator()
-
-
-    # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
-    CREDENTIALS_FILE_PATH = "credentials.json"
-    SETTINGS_FILE_PATH = "settings.json"
-    ID_CACHE_PATH = "transaction_id_cache.json"
-
-    gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-
-    idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
-
-    if gb_pipe_manager.get_pipe().is_functional():
-
-        # # TEST AREA: Retrieve Terminal Info
-        # query_name = "terminal_information"
-        # data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-        # for entry in data:
-        #     # print("\n", entry)
-        #     pass
-        # print("\n")
-        #
-        # reformatted_terminal_id = {}
-        # for entry in data:
-        #     simple_id = str(entry["simple_id"])
-        #     reformatted_terminal_id[simple_id] = str(entry["serial"])
-        # for entry in reformatted_terminal_id:
-        #     # print("\n", entry, reformatted_terminal_id[entry])
-        #     pass
-        # print("\n")
-        # # END
-
-        # TODO: Implement listener and regulate data submissions
-        # reference_settings = file_manager(SETTINGS_FILE_PATH)
-        # listener_managers = []
-        # for query in reference_settings.read_json()["queries"]:
-        #     connector = gb_pipe_manager.get_pipe()
-        #     listener_managers.append(listener_manager(listener(connector, query)))
-
-        # Temporary code to verify functionality
-
-        # Hard-Coded Request
-
-        query_name = "transactions"
-
-        data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-        data_index = 0
-        max_index = 20
-        while (data_index <= max_index):
-            # print("\n", data[data_index])
-            print("\n", data[data_index], idm_instance.issue_id(data[data_index], reformatted_terminal_id))
-            data_index += 1
-
+            print("\nFirst Run Complete")
+        else:
+            l_operator = listener_operator()
     else:
-        print("Unable to establish pipe manager. Check configuration and try again.")
-
+        print("\nUnable to Divert Main - Check cache.json")
 
 # Main execution
 if __name__ == "__main__":
