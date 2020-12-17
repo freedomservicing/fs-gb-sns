@@ -4,21 +4,6 @@ from file_manager import file_manager
 
 class Listener:
 
-"""
-    def __init__(self, table, activeColumn, pollInterval, columnList, connector, pageSize=100):
-        self.__table = table
-        self.__activeColumn = activeColumn
-        self.__pollInterval = pollInterval
-        self.__pageSize = pageSize
-        self.__columnList = columnList
-        self.__connector = connector
-        self.__CACHE_FILE_PATH = "listenerCache.json"
-        self.__CONF_FILE_PATH = "settings.json"
-        self.__cache_manager = file_manager(CACHE_FILE_PATH)
-        self.__conf_manager = file_manager(CONF_FILE_MANAGER)
-        self.__cursor = self.__connector.cursor()
-        """
-
     def __init__(self, connector, queryConfigJson):
         self.__connector = __connector
         self.__queryConfigJson = queryConfigJson
