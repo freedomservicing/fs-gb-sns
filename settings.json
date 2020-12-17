@@ -7,24 +7,46 @@
     "transactions": {
       "attributeTable": "transactionrecord",
       "attributes": [
-        "cellphoneused",
-        "cryptoaddress",
         "cashamount",
         "cashcurrency",
-        "discountcode",
+        "cellphoneused",
+        "cryptoaddress",
         "cryptoamount",
         "cryptocurrency",
         "cryptodiscountamount",
         "detail",
+        "discountcode",
+        "feediscount",
+        "fixedtransactionfee",
+        "localtid",
+        "note",
+        "remotedtid",
         "servertime",
-        "terminaltime",
-        "terminal_id",
         "status",
-        "type",
-        "ratesourceprice"
+        "terminaltime",
+        "identityid",
+        "terminal_id",
+        "expectedprofitsetting",
+        "expectedprofitvalue",
+        "ratesourceprice",
+        "nameofcryptosettingused",
+        "locationid",
+        "type"
       ],
       "listener_column": "id",
       "listener_interval": 60,
+      "fs_destination": "piped_transactions",
+      "relationships": {
+        "cashamount": "amount_fiat_entered",
+        "cryptocurrency": "crypto",
+        "cryptoaddress": "crypto_address",
+        "cryptoamount": "crypto_amount",
+        "discountcode": "discount_code",
+        "cashcurrency": "fiat",
+        "terminal_id": "machine_id",
+        "terminaltime": "time",
+        "cellphoneused": "phone_number",
+      }
     },
     "terminal_information": {
       "attributeTable": "terminal",
@@ -32,64 +54,10 @@
         "id",
         "serialnumber"
       ]
+      "relationships": {
+        "id": "simple_id",
+        "serialnumber": "serial"
+      }
     }
-  },
-  "relationships": {
-    "amount_fiat_entered": [
-      "cashamount",
-      "string"
-    ],
-    "crypto": [
-      "cryptocurrency",
-      "string"
-    ],
-    "crypto_address": [
-      "cryptoaddress",
-      "string"
-    ],
-    "crypto_amount": [
-      "cryptoamount",
-      "float"
-    ],
-    "crypto_amount_in_fiat": [
-      null,
-      "double"
-    ],
-    "discount_code": [
-      "discountcode",
-      "string"
-    ],
-    "fee_at_purchase": [
-      null,
-      "float"
-    ],
-    "fiat": [
-      "cashcurrency",
-      "string"
-    ],
-    "machine_id": [
-      "terminal_id",
-      "integer"
-    ],
-    "time": [
-      "terminaltime",
-      "string"
-    ],
-    "phone_number": [
-      "cellphoneused",
-      "string"
-    ],
-    "identity_id": [
-      null,
-      "string"
-    ],
-    "simple_id": [
-      "id",
-      "string"
-    ],
-    "serial": [
-      "serialnumber",
-      "string"
-    ]
   }
 }

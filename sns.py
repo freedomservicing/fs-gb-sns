@@ -13,6 +13,7 @@ import mysql.connector as connector
 from mysql.connector import errorcode
 from id_manager import id_manager
 from file_manager import file_manager
+from listener import listener_manager
 import os
 import json
 
@@ -149,37 +150,21 @@ class gb_pipe:
     :see: settings.json/relationships
     :returns: restructured json aligned with FS structure
     """
-    def __sanitize_data(self, mysql_observation):
+    def __sanitize_data(self, mysql_observation, relationships=None):
 
-        relationships = self.__settings["relationships"]
-        transaction_data = {}
+        data = {}
 
-        for key in relationships:
+        for key in mysql_observation:
 
-            relationship = relationships[key]
-            assoc_key = relationship[0]
+            key_value = mysql_observation[key]
 
-            # Only add data that is mapped in settings
-            if assoc_key is not None:
-                if assoc_key in mysql_observation:
+            if relationships != None:
+                if key in relationships:
+                    key = relationships[key]
 
-                    raw_value = mysql_observation[relationship[0]]
+        data[key] = key_value
 
-                    mysql_value = raw_value
-
-                    type_id = relationship[1]
-                    if type_id == "string":
-                        mysql_value = str(raw_value)
-                    elif type_id == "double":
-                        mysql_value = float(raw_value)
-                    elif type_id == "integer":
-                        mysql_value = int(raw_value)
-                    # else:
-                    #     print("No type identified: Defaulting to raw input")
-
-                    transaction_data[key] = mysql_value
-
-        return transaction_data
+        return data
 
 
     """Prepare a JSON for FS submission by invoking sanitation methods
@@ -187,10 +172,10 @@ class gb_pipe:
     self.__restructure_query_response()
     :returns: sanitized JSON
     """
-    def __prepare_fs_submission(self, mysql_observations):
+    def __prepare_fs_submission(self, mysql_observations, query_name):
         prepped_data = []
         for observation in mysql_observations:
-            prepped_data.append(self.__sanitize_data(observation))
+            prepped_data.append(self.__sanitize_data(observation), self.__settings["queries"][query_name]["relationships"])
         return prepped_data
 
 
@@ -199,7 +184,7 @@ class gb_pipe:
     :see: settings.json/relationships
     """
     def get_fs_submission(self, query_name):
-        return self.__prepare_fs_submission(self.get_formatted_query(query_name))
+        return self.__prepare_fs_submission(self.get_formatted_query(query_name), query_name)
 
 
     """Commit data to the FS
@@ -227,8 +212,19 @@ class gb_pipe:
             transaction_document.set(data)
 
 
+    """Mock WIP Method for Listener
+
+    EXCERCISE CAUTION WHEN CALLING
+    """
+    def commit_listener_data(self, data, meta_path):
+
+        # collection = self.__fsDB.collection(SOMETHING FROM META_PATH)
+
+        pass
+
+
 """Manages and encapsulates the GB pipe"""
-class pipe_manager():
+class pipe_manager:
 
     __credentials_file_path = None
     __settings_file_path = None
@@ -263,6 +259,18 @@ class pipe_manager():
         return self.__pipe
 
 
+"""Execute first run procedure
+
+ONLY TO BE INSTANCED FROM MAIN OF SNS
+"""
+class first_run_operator:
+
+    def __init__(self):
+        self.initial_draw()
+
+    def initial_draw(self):
+        pass
+
 """Establish an active listener and pipe between the GB backend and CaaS-FS frontend
 
 Connection to the FS requires access to a user's Google API service key.
@@ -270,6 +278,15 @@ Under credentials.json, populate the googleAuthPath field with the absolute path
 to your Google API service key JSON.
 """
 def main():
+
+    STANDARD_CACHE_PATH = "cache.json"
+
+    standard_cache_manager = file_manager(STANDARD_CACHE_PATH)
+
+    if standard_cache_manager.is_functional():
+        if standard_cache_manager.read_json()["first_run"]:
+            fr_operator = first_run_operator()
+
 
     # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
     CREDENTIALS_FILE_PATH = "credentials.json"
@@ -280,29 +297,32 @@ def main():
 
     idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
 
-    if gb_pipe_manager.get_pipe().is_functional:
+    if gb_pipe_manager.get_pipe().is_functional():
 
-        # TEST AREA: Retrieve Terminal Info
-        query_name = "terminal_information"
-        data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-        for entry in data:
-            # print("\n", entry)
-            pass
-        print("\n")
-        # END
-
-        # TEST AREA: ID Distribution
-        reformatted_terminal_id = {}
-        for entry in data:
-            simple_id = str(entry["simple_id"])
-            reformatted_terminal_id[simple_id] = str(entry["serial"])
-        for entry in reformatted_terminal_id:
-            # print("\n", entry, reformatted_terminal_id[entry])
-            pass
-        print("\n")
-        # END
+        # # TEST AREA: Retrieve Terminal Info
+        # query_name = "terminal_information"
+        # data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
+        # for entry in data:
+        #     # print("\n", entry)
+        #     pass
+        # print("\n")
+        #
+        # reformatted_terminal_id = {}
+        # for entry in data:
+        #     simple_id = str(entry["simple_id"])
+        #     reformatted_terminal_id[simple_id] = str(entry["serial"])
+        # for entry in reformatted_terminal_id:
+        #     # print("\n", entry, reformatted_terminal_id[entry])
+        #     pass
+        # print("\n")
+        # # END
 
         # TODO: Implement listener and regulate data submissions
+        # reference_settings = file_manager(SETTINGS_FILE_PATH)
+        # listener_managers = []
+        # for query in reference_settings.read_json()["queries"]:
+        #     connector = gb_pipe_manager.get_pipe()
+        #     listener_managers.append(listener_manager(listener(connector, query)))
 
         # Temporary code to verify functionality
 
