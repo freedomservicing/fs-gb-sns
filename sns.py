@@ -199,7 +199,7 @@ class gb_pipe:
 
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
 
-            current_document = collection.document(id_manager.issue_id(entry, meta_json))
+            current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
             current_document.set(entry)
 
 
