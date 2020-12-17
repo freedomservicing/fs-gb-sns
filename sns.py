@@ -132,8 +132,6 @@ class gb_pipe:
     :returns: formatted JSON with keys binding mysql values
     """
     def get_formatted_query(self, query_name):
-
-        # TODO: Remove Hard-Coded Query
         return self.__restructure_query_response(query_name, self.__submit_query(self.__get_query(query_name)))
 
 
@@ -191,25 +189,14 @@ class gb_pipe:
 
     DO NOT INVOKE OR OTHERWISE CALL - THIS IS A PROTOTYPE / PSUEDOCODE FUNCTION
     """
-    def commit_data(self, data):
+    def commit_data(self, data, endpoint, id_manager, meta_json):
 
-        collection = self.__fsDB.collection("Machines")
+        current_collection = self.__fsDB.collection(endpoint)
 
         for entry in data:
 
-            # TODO - Assign UUID to all GB Machines and assign appropriately
-            data["machine_id"] = "PLACEHOLDER_UUID_A"
-
-            machine_document = collection.document(data["machine_id"])
-            machine_activity = machine_document.collection("Activity")
-
-            # TODO - Assign UUID to all unique Transactions and assign appropriately
-            transaction_document = machine_activity.document("PLACEHOLDER_UUID_B")
-
-            # TODO - Figure out if this actually works (???)
-            data.pop("machine_id", None)
-
-            transaction_document.set(data)
+            current_document = collection.document(id_manager.issue_id(entry, meta_json))
+            current_document.set(entry)
 
 
     """Mock WIP Method for Listener
@@ -265,7 +252,12 @@ ONLY TO BE INSTANCED FROM MAIN OF SNS
 """
 class first_run_operator:
 
-    def __init__(self):
+    __query_name = None
+    __meta = None
+
+    def __init__(self, query_name, meta=False):
+        self.__query_name = query_name
+        self.__meta = meta
         self.__initial_draw()
 
     def __initial_draw(self):
@@ -276,49 +268,39 @@ class first_run_operator:
         ID_CACHE_PATH = "transaction_id_cache.json"
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-
         idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
+
+        settings_file_manager = file_manager(SETTINGS_FILE_PATH)
+        settings_json = settings_manager.read_json()
 
         if gb_pipe_manager.get_pipe().is_functional():
 
-            # # TEST AREA: Retrieve Terminal Info
-            # query_name = "terminal_information"
-            # data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-            # for entry in data:
-            #     # print("\n", entry)
-            #     pass
-            # print("\n")
-            #
-            # reformatted_terminal_id = {}
-            # for entry in data:
-            #     simple_id = str(entry["simple_id"])
-            #     reformatted_terminal_id[simple_id] = str(entry["serial"])
-            # for entry in reformatted_terminal_id:
-            #     # print("\n", entry, reformatted_terminal_id[entry])
-            #     pass
-            # print("\n")
-            # # END
+            reformatted_terminal_id = None
 
-            # TODO: Implement listener and regulate data submissions
-            # reference_settings = file_manager(SETTINGS_FILE_PATH)
-            # listener_managers = []
-            # for query in reference_settings.read_json()["queries"]:
-            #     connector = gb_pipe_manager.get_pipe()
-            #     listener_managers.append(listener_manager(listener(connector, query)))
+            if query_name == "transactions":
+                # TEST AREA: Retrieve Terminal Info
+                q_name = "terminal_information"
+                tdata = gb_pipe_manager.get_pipe().get_fs_submission(q_name)
+                for entry in tdata:
+                    # print("\n", entry)
+                    pass
+                print("\n")
 
-            # Temporary code to verify functionality
-
-            # Hard-Coded Request
-
-            query_name = "transactions"
+                reformatted_terminal_id = {}
+                for entry in tdata:
+                    simple_id = str(entry["simple_id"])
+                    reformatted_terminal_id[simple_id] = str(entry["serial"])
+                for entry in reformatted_terminal_id:
+                    # print("\n", entry, reformatted_terminal_id[entry])
+                    pass
+                print("\n")
+                # END
 
             data = gb_pipe_manager.get_pipe().get_fs_submission(query_name)
-            data_index = 0
-            max_index = 20
-            while (data_index <= max_index):
-                # print("\n", data[data_index])
-                print("\n", data[data_index], idm_instance.issue_id(data[data_index], reformatted_terminal_id))
-                data_index += 1
+
+            endpoint = settings_json["queries"][query_name]["endpoint"]
+
+            # gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -334,7 +316,16 @@ class listener_operator:
         self.__conduct_listening()
 
     def __conduct_listening(self):
+
         # Listener operation
+
+        # TODO: Implement listener and regulate data submissions
+        # reference_settings = file_manager(SETTINGS_FILE_PATH)
+        # listener_managers = []
+        # for query in reference_settings.read_json()["queries"]:
+        #     connector = gb_pipe_manager.get_pipe()
+        #     listener_managers.append(listener_manager(listener(connector, query)))
+
         pass
 
 
@@ -346,21 +337,23 @@ to your Google API service key JSON.
 """
 def main():
 
-    STANDARD_CACHE_PATH = "cache.json"
+    SETTINGS_FILE_PATH = "settings.json"
+    settings_manager = file_manager(SETTINGS_FILE_PATH)
 
-    standard_cache_manager = file_manager(STANDARD_CACHE_PATH)
+    if settings_manager.is_functional():
+        settings_json = settings_manager.read_json()
+        for query in settings_json["queries"]:
+            if query["first_run"] and query != "terminal_information":
+                settings_json["queries"][query]["first_run"] = False
+                settings_manager.write_json(settings_json)
+                fr_operator = first_run_operator(query)
+                print("\nFirst Run Complete for Query:", query)
 
-    if standard_cache_manager.is_functional():
-        standard_cache_json = standard_cache_manager.read_json()
-        if standard_cache_json["first_run"]:
-            standard_cache_json["first_run"] = False
-            standard_cache_manager.write_json(standard_cache_json)
-            fr_operator = first_run_operator()
-            print("\nFirst Run Complete")
-        else:
-            l_operator = listener_operator()
-    else:
-        print("\nUnable to Divert Main - Check cache.json")
+
+    print("\nCompleted First Run Procedures")
+
+    # Procedes to Spool Listeners
+    l_operator = listener_operator()
 
 # Main execution
 if __name__ == "__main__":

@@ -11,3 +11,6 @@
 
 # Dev Env
 * The `launch.json` in `.vscode` should be cross-platform if you use VSCode for your environment.
+
+# Special Notes
+* **settings.json** - If a query has a subquery, then the subquery must be assigned first

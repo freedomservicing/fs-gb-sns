@@ -4,7 +4,24 @@
   "organization": "00000",
   "machine_brand": "0",
   "queries": {
+    "terminal_information": {
+      "meta": true,
+      "meta_reference": null,
+      "attributeTable": "terminal",
+      "attributes": [
+        "id",
+        "serialnumber"
+      ]
+      "relationships": {
+        "id": "simple_id",
+        "serialnumber": "serial"
+      },
+      "endpoint": "Terminal Info",
+      "first_run": true
+    },
     "transactions": {
+      "meta": false,
+      "meta_reference": "terminal_information",
       "attributeTable": "transactionrecord",
       "attributes": [
         "cashamount",
@@ -20,7 +37,7 @@
         "fixedtransactionfee",
         "localtid",
         "note",
-        "remotedtid",
+        "remotetid",
         "servertime",
         "status",
         "terminaltime",
@@ -46,18 +63,9 @@
         "terminal_id": "machine_id",
         "terminaltime": "time",
         "cellphoneused": "phone_number",
-      }
-    },
-    "terminal_information": {
-      "attributeTable": "terminal",
-      "attributes": [
-        "id",
-        "serialnumber"
-      ]
-      "relationships": {
-        "id": "simple_id",
-        "serialnumber": "serial"
-      }
+      },
+      "endpoint": "Transactions",
+      "first_run": true
     }
   }
 }
