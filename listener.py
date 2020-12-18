@@ -1,13 +1,21 @@
+"""Listener Boi
+
+:see: https://docs.google.com/document/d/1CmbGNYDnQZ6idU0OOlEq3P8plQmYn6p8NcZcOXrTZAw/edit
+"""
+
 import json
 import time
 from file_manager import file_manager
 import threading
 
-class Listener:
+class listener:
 
-    def __init__(self, connector, queryConfigJson):
+    def __init__(self, connector, queryConfigJson, query_name, idm, meta_json):
         self.__connector = connector
         self.__queryConfigJson = queryConfigJson
+        self.__query_name = query_name
+        self.__idm = idm
+        self.__meta_json = meta_json
 
         self.__table = self.__queryConfigJson["attributeTable"]
         self.__activeColumn = self.__queryConfigJson["listener_column"]
@@ -25,6 +33,8 @@ class Listener:
         self.__CACHE_FILE_PATH = "listenerCache.json"
         self.__cache_manager = file_manager(self.__CACHE_FILE_PATH)
         self.__cursor = self.__connector.cursor()
+
+        self.__endpoint = self.__queryConfigJson["endpoint"]
 
         # An ID for logging purposes. Ex: listener_transactions_id_60
         self.__listener_id = "listener_{self.__table}_{self.__activeColumn}_${self.__pollInterval}"
@@ -44,11 +54,9 @@ class Listener:
                 resultSetSize = len(resultSet)
                 lastId = resultSet.keys(-1)
 
-                # Assuming this is where data gets pushed - TEST AREA
-                # TODO: Make some kind of metadata / settings for WHERE this data goes in FS
-                # TODO: Above is probably going to need to be a DIRECT PATH
-                # self.__connector.commit_listener_data(resultSet, meta_path)
-                # END OF TEST AREA
+                resultSet = self.__connector(resultSet, self.__query_name)
+
+                self.__connector.commit_data(resultSet, self.__endpoint, self.__idm, self.__meta_json)
 
                 if resultSetSize > 0:
                     break
@@ -58,9 +66,6 @@ class Listener:
         return self.__listener_id
 
 ## This needs more work but it's 4:11 and I'm tired. Will resume tomorrow.
-
-    # def initely_a_real_function(self):
-        # Heh
 
 class listener_manager:
 

@@ -14,7 +14,7 @@ import mysql.connector as connector
 from mysql.connector import errorcode
 from id_manager import id_manager
 from file_manager import file_manager
-from listener import listener_manager
+from listener import listener, listener_manager
 import os
 import json
 
@@ -175,7 +175,7 @@ class gb_pipe:
     self.__restructure_query_response()
     :returns: sanitized JSON
     """
-    def __prepare_fs_submission(self, mysql_observations, query_name):
+    def prepare_fs_submission(self, mysql_observations, query_name):
         prepped_data = []
 
         for observation in mysql_observations:
@@ -189,7 +189,7 @@ class gb_pipe:
     :see: settings.json/relationships
     """
     def get_fs_submission(self, query_name):
-        return self.__prepare_fs_submission(self.get_formatted_query(query_name), query_name)
+        return self.prepare_fs_submission(self.get_formatted_query(query_name), query_name)
 
 
     """Commit data to the FS
@@ -198,14 +198,14 @@ class gb_pipe:
     """
     def commit_data(self, data, endpoint, id_manager, meta_json):
 
-        current_collection = self.__fsDB.collection(endpoint)
+        # current_collection = self.__fsDB.collection(endpoint)
 
         for entry in data:
 
-            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
+            print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
 
-            current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
-            current_document.set(entry)
+            # current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
+            # current_document.set(entry)
 
 
     """Mock WIP Method for Listener
@@ -321,21 +321,68 @@ ONLY TO BE INSTANCED FROM MAIN OF SNS
 """
 class listener_operator:
 
-    def __init__(self):
-        self.__conduct_listening()
+    __settings_path = None
+    __settings_file = None
+    __meta_json = None
+
+    def __init__(self, settings_path, meta_json=None):
+        self.__settings_path = settings_path
+        self.__settings_file = file_manager(self.__settings_path)
+
+        # TODO: Enforce Modularity
+        self.__meta_json = meta_json
+
+        if self.__settings_file.is_functional():
+            self.__conduct_listening()
+        else:
+            print("Cannot Conduct Listening Due to Settings File Issue")
 
     def __conduct_listening(self):
+
+        CREDENTIALS_FILE_PATH = "credentials.json"
+        SETTINGS_FILE_PATH = "settings.json"
+        ID_CACHE_PATH = "transaction_id_cache.json"
+
+        gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
+        idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
 
         # Listener operation
 
         # TODO: Implement listener and regulate data submissions
-        # reference_settings = file_manager(SETTINGS_FILE_PATH)
-        # listener_managers = []
-        # for query in reference_settings.read_json()["queries"]:
-        #     connector = gb_pipe_manager.get_pipe()
-        #     listener_managers.append(listener_manager(listener(connector, query)))
+        listener_managers = []
+        connector = gb_pipe_manager.get_pipe()
+        settings_json = self.__settings_file.read_json()
+        for query in settings_json["queries"]:
+            # TODO: Remove meta exlusion from hard-code
+            if query != "terminal_information":
+                listener_managers.append(listener_manager(listener(connector, settings_json["queries"][query], query, idm_instance, self.__load_meta(connector))))
 
-        pass
+
+    """Temporary WIP Method for Enforcing Modularity for Meta jsons
+
+    CURRENTLY HARD-CODED FOR TERMINAL_INFORMATION
+    """
+    def __load_meta(self, pipe):
+
+        # TEST AREA: Retrieve Terminal Info
+        q_name = "terminal_information"
+        tdata = pipe.get_fs_submission(q_name)
+        for entry in tdata:
+            # print("\n", entry)
+            pass
+        # print("\n")
+
+        reformatted_terminal_id = {}
+        for entry in tdata:
+            simple_id = str(entry["simple_id"])
+            reformatted_terminal_id[simple_id] = str(entry["serial"])
+        for entry in reformatted_terminal_id:
+            # print("\n", entry, reformatted_terminal_id[entry])
+            pass
+        # print("\n")
+        # END
+
+        return reformatted_terminal_id
 
 
 def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
@@ -371,17 +418,24 @@ def main():
         settings_json = settings_manager.read_json()
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
+            # TODO: Change meta_json to be modular
             if query_json["first_run"] and query != "terminal_information":
-                fr_operator = first_run_operator(query)
+                # fr_operator = first_run_operator(query)
                 settings_json["queries"][query]["first_run"] = False
                 settings_manager.write_json(settings_json)
                 print("\nFirst Run Complete for Query:", query)
-    
+
 
     print("\nCompleted First Run Procedures")
 
     # Procedes to Spool Listeners
-    l_operator = listener_operator()
+    # if settings_manager.is_functional():
+    #     settings_json = settings_manager.read_json()
+    #     for query in settings_json["queries"]:
+    #         query_json = settings_json["queries"][query]
+    #         if query != "terminal_information":
+    #             l_operator = listener_operator(SETTINGS_FILE_PATH)
+
 
 # Main execution
 if __name__ == "__main__":
