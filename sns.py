@@ -359,8 +359,10 @@ to your Google API service key JSON.
 def main():
 
     parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
-    parser.add_argument('-f', '--flush', dest='flush_output', action='store_const', const=flush_transaction_id_cache(), help='Flush the transaction id cache')
+    parser.add_argument('-f', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
     args = parser.parse_args()
+    if args.flush_output:
+        flush_transaction_id_cache()
 
     SETTINGS_FILE_PATH = "settings.json"
     settings_manager = file_manager(SETTINGS_FILE_PATH)
@@ -374,7 +376,7 @@ def main():
                 settings_json["queries"][query]["first_run"] = False
                 settings_manager.write_json(settings_json)
                 print("\nFirst Run Complete for Query:", query)
-
+    
 
     print("\nCompleted First Run Procedures")
 
