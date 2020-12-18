@@ -79,7 +79,10 @@ class id_manager:
             cache_json["machines"][gb_serial]["last_transaction_id"] = transaction_id
         else:
             # Adds new entry to the cache for each identified machine
-            machine_id = self.__increment_id(cache_json["last_machine_id"])
+            if len(cache_json["machines"]) != 0:
+                machine_id = self.__increment_id(cache_json["last_machine_id"])
+            else:
+                machine_id = cache_json["last_machine_id"]
             cache_json["last_machine_id"] = machine_id
             cache_json["machines"][gb_serial] = {}
             cache_json["machines"][gb_serial]["brand"] = machine_brand

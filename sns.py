@@ -60,7 +60,7 @@ class gb_pipe:
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
                 print("Bad Database!")
             else:
-                print(err)
+                print("General Error:", err)
 
 
     """Establish a connection to the FS DB
@@ -293,7 +293,7 @@ class first_run_operator:
                 for entry in tdata:
                     # print("\n", entry)
                     pass
-                print("\n")
+                # print("\n")
 
                 reformatted_terminal_id = {}
                 for entry in tdata:
@@ -302,7 +302,7 @@ class first_run_operator:
                 for entry in reformatted_terminal_id:
                     # print("\n", entry, reformatted_terminal_id[entry])
                     pass
-                print("\n")
+                # print("\n")
                 # END
 
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
