@@ -9,6 +9,7 @@
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+import argparse
 import mysql.connector as connector
 from mysql.connector import errorcode
 from id_manager import id_manager
@@ -337,6 +338,18 @@ class listener_operator:
         pass
 
 
+def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
+    print('Flushing transaction id cache')
+    successful_flush = True
+    try:
+        cache_manager = file_manager(path_to_cache)
+        template_manager = file_manager(path_to_template)
+        cache_manager.write_json(template_manager.read_json())
+    except:
+        successful_flush = False
+    return successful_flush
+
+
 """Establish an active listener and pipe between the GB backend and CaaS-FS frontend
 
 Connection to the FS requires access to a user's Google API service key.
@@ -344,6 +357,10 @@ Under credentials.json, populate the googleAuthPath field with the absolute path
 to your Google API service key JSON.
 """
 def main():
+
+    parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
+    parser.add_argument('-f', '--flush', dest='flush_output', action='store_const', const=flush_transaction_id_cache(), help='Flush the transaction id cache')
+    args = parser.parse_args()
 
     SETTINGS_FILE_PATH = "settings.json"
     settings_manager = file_manager(SETTINGS_FILE_PATH)
