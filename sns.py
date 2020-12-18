@@ -375,6 +375,8 @@ def main():
         if settings_manager.is_functional():
             settings_json = settings_manager.read_json()
             is_all = 'all' in args.first_run
+            if 'all' in args.first_run or 'transactions' in args.first_run:
+                flush_transaction_id_cache()
             for query in settings_json["queries"]:
                 if (is_all or query in args.first_run) and query != "terminal_information":
                     print("Starting First Run for Query:", query)
