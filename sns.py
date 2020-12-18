@@ -358,27 +358,31 @@ to your Google API service key JSON.
 """
 def main():
 
+    SETTINGS_FILE_PATH = "settings.json"
+    settings_manager = file_manager(SETTINGS_FILE_PATH)
+
+    # Create parser object, and add arguments
     parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
-    parser.add_argument('-f', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
+    parser.add_argument('-fl', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
+    parser.add_argument('-fr', '--firstrun', dest='first_run', nargs='*', help='Runs the initial setup steps for the listener')
+
+    # Handle execution of arguments
     args = parser.parse_args()
     if args.flush_output:
         flush_transaction_id_cache()
 
-    SETTINGS_FILE_PATH = "settings.json"
-    settings_manager = file_manager(SETTINGS_FILE_PATH)
-
-    if settings_manager.is_functional():
-        settings_json = settings_manager.read_json()
-        for query in settings_json["queries"]:
-            query_json = settings_json["queries"][query]
-            if query_json["first_run"] and query != "terminal_information":
-                fr_operator = first_run_operator(query)
-                settings_json["queries"][query]["first_run"] = False
-                settings_manager.write_json(settings_json)
-                print("\nFirst Run Complete for Query:", query)
-    
-
-    print("\nCompleted First Run Procedures")
+    if args.first_run is not None:
+        if settings_manager.is_functional():
+            settings_json = settings_manager.read_json()
+            is_all = 'all' in args.first_run
+            for query in settings_json["queries"]:
+                if (is_all or query in args.first_run) and query != "terminal_information":
+                    print("Starting First Run for Query:", query)
+                    fr_operator = first_run_operator(query)
+                    print("\nFirst Run Complete for Query:", query)
+            print("\nCompleted First Run Procedures")
+        else:
+            print("Settings manager is not functional")
 
     # Procedes to Spool Listeners
     l_operator = listener_operator()
