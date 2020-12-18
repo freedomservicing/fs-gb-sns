@@ -1,6 +1,7 @@
 import json
 import time
 from file_manager import file_manager
+import threading
 
 class Listener:
 
@@ -72,6 +73,6 @@ class listener_manager:
     def __initiate_listener(self):
         try:
             new_listener_thread = threading.Thread(target=self.__listener.listen)
-            new_listener_thread.Start()
+            new_listener_thread.start()
         except:
             print("Unable to Start Thread for Listener:", self.__listener.get_listener_id())

@@ -9,6 +9,7 @@
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+import argparse
 import mysql.connector as connector
 from mysql.connector import errorcode
 from id_manager import id_manager
@@ -59,7 +60,7 @@ class gb_pipe:
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
                 print("Bad Database!")
             else:
-                print(err)
+                print("General Error:", err)
 
 
     """Establish a connection to the FS DB
@@ -292,7 +293,7 @@ class first_run_operator:
                 for entry in tdata:
                     # print("\n", entry)
                     pass
-                print("\n")
+                # print("\n")
 
                 reformatted_terminal_id = {}
                 for entry in tdata:
@@ -301,7 +302,7 @@ class first_run_operator:
                 for entry in reformatted_terminal_id:
                     # print("\n", entry, reformatted_terminal_id[entry])
                     pass
-                print("\n")
+                # print("\n")
                 # END
 
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
@@ -337,6 +338,18 @@ class listener_operator:
         pass
 
 
+def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
+    print('Flushing transaction id cache')
+    successful_flush = True
+    try:
+        cache_manager = file_manager(path_to_cache)
+        template_manager = file_manager(path_to_template)
+        cache_manager.write_json(template_manager.read_json())
+    except:
+        successful_flush = False
+    return successful_flush
+
+
 """Establish an active listener and pipe between the GB backend and CaaS-FS frontend
 
 Connection to the FS requires access to a user's Google API service key.
@@ -348,18 +361,30 @@ def main():
     SETTINGS_FILE_PATH = "settings.json"
     settings_manager = file_manager(SETTINGS_FILE_PATH)
 
-    if settings_manager.is_functional():
-        settings_json = settings_manager.read_json()
-        for query in settings_json["queries"]:
-            query_json = settings_json["queries"][query]
-            if query_json["first_run"] and query != "terminal_information":
-                fr_operator = first_run_operator(query)
-                settings_json["queries"][query]["first_run"] = False
-                settings_manager.write_json(settings_json)
-                print("\nFirst Run Complete for Query:", query)
+    # Create parser object, and add arguments
+    parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
+    parser.add_argument('-fl', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
+    parser.add_argument('-fr', '--firstrun', dest='first_run', nargs='*', help='Runs the initial setup steps for the listener')
 
+    # Handle execution of arguments
+    args = parser.parse_args()
+    if args.flush_output:
+        flush_transaction_id_cache()
 
-    print("\nCompleted First Run Procedures")
+    if args.first_run is not None:
+        if settings_manager.is_functional():
+            settings_json = settings_manager.read_json()
+            is_all = 'all' in args.first_run
+            if 'all' in args.first_run or 'transactions' in args.first_run:
+                flush_transaction_id_cache()
+            for query in settings_json["queries"]:
+                if (is_all or query in args.first_run) and query != "terminal_information":
+                    print("Starting First Run for Query:", query)
+                    fr_operator = first_run_operator(query)
+                    print("\nFirst Run Complete for Query:", query)
+            print("\nCompleted First Run Procedures")
+        else:
+            print("Settings manager is not functional")
 
     # Procedes to Spool Listeners
     l_operator = listener_operator()

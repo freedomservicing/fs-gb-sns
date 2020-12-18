@@ -1,1 +1,70 @@
-{"firestoreAddress": "fgcomplianceportal", "organization": "00000", "machine_brand": "0", "queries": {"terminal_information": {"meta": true, "meta_reference": null, "attributeTable": "terminal", "attributes": ["id", "serialnumber"], "relationships": {"id": "simple_id", "serialnumber": "serial"}, "endpoint": "Terminal Info", "first_run": true}, "transactions": {"meta": false, "meta_reference": "terminal_information", "attributeTable": "transactionrecord", "attributes": ["cashamount", "cashcurrency", "cellphoneused", "cryptoaddress", "cryptoamount", "cryptocurrency", "cryptodiscountamount", "detail", "discountcode", "feediscount", "fixedtransactionfee", "localtid", "note", "remotetid", "servertime", "status", "terminaltime", "identity_id", "terminal_id", "expectedprofitsetting", "expectedprofitvalue", "ratesourceprice", "nameofcryptosettingused", "locationid", "type"], "listener_column": "id", "listener_interval": 60, "fs_destination": "piped_transactions", "relationships": {"cashamount": "amount_fiat_entered", "cryptocurrency": "crypto", "cryptoaddress": "crypto_address", "cryptoamount": "crypto_amount", "discountcode": "discount_code", "cashcurrency": "fiat", "terminal_id": "machine_id", "terminaltime": "time", "cellphoneused": "phone_number"}, "endpoint": "Transactions", "first_run": true}}}
+{
+  "firestoreAddress": "fgcomplianceportal",
+  "organization": "00000",
+  "machine_brand": "0",
+  "queries": {
+    "terminal_information": {
+      "meta": true,
+      "meta_reference": null,
+      "attributeTable": "terminal",
+      "attributes": [
+        "id",
+        "serialnumber"
+      ],
+      "relationships": {
+        "id": "simple_id",
+        "serialnumber": "serial"
+      },
+      "endpoint": "Terminal Info",
+      "first_run": true
+    },
+    "transactions": {
+      "meta": false,
+      "meta_reference": "terminal_information",
+      "attributeTable": "transactionrecord",
+      "attributes": [
+        "cashamount",
+        "cashcurrency",
+        "cellphoneused",
+        "cryptoaddress",
+        "cryptoamount",
+        "cryptocurrency",
+        "cryptodiscountamount",
+        "detail",
+        "discountcode",
+        "feediscount",
+        "fixedtransactionfee",
+        "localtid",
+        "note",
+        "remotetid",
+        "servertime",
+        "status",
+        "terminaltime",
+        "identity_id",
+        "terminal_id",
+        "expectedprofitsetting",
+        "expectedprofitvalue",
+        "ratesourceprice",
+        "nameofcryptosettingused",
+        "locationid",
+        "type"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "fs_destination": "piped_transactions",
+      "relationships": {
+        "cashamount": "amount_fiat_entered",
+        "cryptocurrency": "crypto",
+        "cryptoaddress": "crypto_address",
+        "cryptoamount": "crypto_amount",
+        "discountcode": "discount_code",
+        "cashcurrency": "fiat",
+        "terminal_id": "machine_id",
+        "terminaltime": "time",
+        "cellphoneused": "phone_number"
+      },
+      "endpoint": "Transactions",
+      "first_run": false
+    }
+  }
+}
