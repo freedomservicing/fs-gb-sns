@@ -1,7 +1,7 @@
 <p align="center"><img src="https://raw.githubusercontent.com/freedomservicing/fs_branding/master/fs/fs_logo.jpg" alt="drawing" width="300"/></p>
 
 # <p align="center"><b>gb_sns</b></p>
-<p align="center"><b><i>General Bytes Database Scraper</i></b></p>
+<p align="center"><b><i>Freedom Servicing General Bytes Database Scraper Tool</i></b></p>
 
 # Dependencies
 * Make sure you have MySQL Connector/Python installed on your local system or the import wont work. You need to manually download this (probably)
@@ -18,3 +18,5 @@
 
 # Code Copyright/License Notice
 Copyright © 2020, Freedom Servicing LLC, All rights reserved.
+
+The Freedom Servicing General Bytes Database Scraper Tool (GB_SNS) is released under the terms of the MIT license. See LICENSE for more information or see https://opensource.org/licenses/MIT.
