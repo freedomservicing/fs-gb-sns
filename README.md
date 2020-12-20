@@ -1,4 +1,4 @@
-<p align="center"><img src="https://raw.githubusercontent.com/freedomgateway/fg_branding/master/fg_logo_gold.jpg" alt="drawing" width="300"/></p>
+<p align="center"><img src="https://raw.githubusercontent.com/freedomservicing/fs_branding/master/fs/fs_logo.jpg" alt="drawing" width="300"/></p>
 
 # <p align="center"><b>gb_sns</b></p>
 <p align="center"><b><i>General Bytes Database Scraper</i></b></p>
@@ -15,3 +15,6 @@
 
 # Special Notes
 * **settings.json** - If a query has a subquery, then the subquery must be assigned first
+
+# Code Copyright/License Notice
+Copyright © 2020, Freedom Servicing LLC, All rights reserved.
