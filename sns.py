@@ -276,6 +276,41 @@ class first_run_operator:
         self.__meta = meta
         self.__initial_draw()
 
+    def __update_meta_cache(self, query_dict, query_name, pipe, cache_path="meta_cache.json"):
+
+        meta_cache_manager = file_manager(cache_path)
+        meta_cache_contents = meta_cache_manager.read_json() if meta_cache_manager.is_functional() else {}
+        metadata = pipe.get_fs_submission(query_name)
+        for entry in metadata:
+            print("\n", entry)
+            # pass
+        print("\n")
+
+        reformatted_terminal_id = {}
+        attributes = query_dict["attributes"]
+        relationships = query_dict["relationships"]
+
+        for entry in metadata:
+            attr_idx = 0
+            # While loop pairs keys and values and updates reformatted_terminal_id
+            while(attr_idx < len(attributes)):
+                key_name = relationships[attributes[attr_idx]]
+                attr_idx += 1
+                value_name = relationships[attributes[attr_idx]]
+                attr_idx += 1
+                data_key = str(entry[key_name])
+                reformatted_terminal_id[data_key] = str(entry[value_name])
+
+        for entry in reformatted_terminal_id:
+            print("\n", entry, reformatted_terminal_id[entry])
+            # pass
+        print("\n")
+
+        meta_cache_contents.update({query_name: reformatted_terminal_id})
+        meta_cache_manager.write_json(meta_cache_contents, cache_path)
+
+
+
     def __initial_draw(self):
 
         # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
@@ -292,31 +327,17 @@ class first_run_operator:
         if gb_pipe_manager.get_pipe().is_functional():
 
             reformatted_terminal_id = None
-
-            if self.__query_name == "transactions":
+            query = settings_json["queries"][self.__query_name]
+            if query["meta"]:
                 # TEST AREA: Retrieve Terminal Info
-                q_name = "terminal_information"
-                tdata = gb_pipe_manager.get_pipe().get_fs_submission(q_name)
-                for entry in tdata:
-                    # print("\n", entry)
-                    pass
-                # print("\n")
-
-                reformatted_terminal_id = {}
-                for entry in tdata:
-                    simple_id = str(entry["simple_id"])
-                    reformatted_terminal_id[simple_id] = str(entry["serial"])
-                for entry in reformatted_terminal_id:
-                    # print("\n", entry, reformatted_terminal_id[entry])
-                    pass
-                # print("\n")
+                self.__update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
 
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
 
-            endpoint = settings_json["queries"][self.__query_name]["endpoint"]
+            endpoint = query["endpoint"]
 
-            gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+            # gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -396,6 +417,7 @@ class listener_operator:
         return reformatted_terminal_id
 
 
+
 def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
     print('Flushing transaction id cache')
     successful_flush = True
@@ -436,7 +458,7 @@ def main():
             if 'all' in args.first_run or 'transactions' in args.first_run:
                 flush_transaction_id_cache()
             for query in settings_json["queries"]:
-                if (is_all or query in args.first_run) and query != "terminal_information":
+                if (is_all or query in args.first_run):
                     print("Starting First Run for Query:", query)
                     fr_operator = first_run_operator(query)
                     print("\nFirst Run Complete for Query:", query)
@@ -445,12 +467,12 @@ def main():
             print("Settings manager is not functional")
 
     # Procedes to Spool Listeners
-    if settings_manager.is_functional():
-        settings_json = settings_manager.read_json()
-        for query in settings_json["queries"]:
-            query_json = settings_json["queries"][query]
-            if query != "terminal_information":
-                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
+    # if settings_manager.is_functional():
+    #     settings_json = settings_manager.read_json()
+    #     for query in settings_json["queries"]:
+    #         query_json = settings_json["queries"][query]
+    #         if query != "terminal_information":
+    #             l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
 
 
 # Main execution
