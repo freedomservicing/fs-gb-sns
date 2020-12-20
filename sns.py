@@ -31,6 +31,9 @@ class gb_pipe:
     # Will be set to false during construction if a connection to either DB fails
     __functional = True
 
+    # Debug for checking pagination
+    __transactions_pushed = 0
+
 
     """Constructor
     :param credentials: valid credentials JSON object
@@ -81,7 +84,7 @@ class gb_pipe:
     :see: settings.json/attributes
     :returns: formatted mysql search query
     """
-    def __get_query(self, query_name):
+    def get_query(self, query_name):
         queryString = "SELECT"
         for attribute in self.__settings["queries"][query_name]["attributes"]:
             queryString = queryString + " " + attribute + ","
@@ -93,9 +96,9 @@ class gb_pipe:
     :param query: valid mysql query
     :returns: list of observations
 
-    If entries is left as default, the entire db will be queries
+    If entries is left as default, all observations from the query will be returned
     """
-    def __submit_query(self, query, entries=-1):
+    def submit_query(self, query, entries=-1):
         cursor = self.__mysqlDB.cursor()
         cursor.execute(query)
         mysql_data = []
@@ -115,7 +118,7 @@ class gb_pipe:
     :see: settings.json/attributes
     :returns: dict form of all observations
     """
-    def __restructure_query_response(self, query_name, mysql_observations):
+    def restructure_query_response(self, query_name, mysql_observations):
         attributes = self.__settings["queries"][query_name]["attributes"]
         mysql_bound_data = []
         for observation in mysql_observations:
@@ -133,7 +136,7 @@ class gb_pipe:
     :returns: formatted JSON with keys binding mysql values
     """
     def get_formatted_query(self, query_name):
-        return self.__restructure_query_response(query_name, self.__submit_query(self.__get_query(query_name)))
+        return self.restructure_query_response(query_name, self.submit_query(self.get_query(query_name)))
 
 
     """Return the status of the pipe - True if both GB and FS connections are live
@@ -145,7 +148,7 @@ class gb_pipe:
 
     """Convert data into a format suitable for FS submission
     :param mysql_observation: formatted mysql_observation from an entry generated
-    by self.__restructure_query_response()
+    by self.restructure_query_response()
     :see: settings.json/relationships
     :returns: restructured json aligned with FS structure
     """
@@ -172,7 +175,7 @@ class gb_pipe:
 
     """Prepare a JSON for FS submission by invoking sanitation methods
     :param mysql_observations: formatted mysql query - generated from
-    self.__restructure_query_response()
+    self.restructure_query_response()
     :returns: sanitized JSON
     """
     def prepare_fs_submission(self, mysql_observations, query_name):
@@ -198,14 +201,18 @@ class gb_pipe:
     """
     def commit_data(self, data, endpoint, id_manager, meta_json):
 
-        # current_collection = self.__fsDB.collection(endpoint)
+        current_collection = self.__fsDB.collection(endpoint)
 
         for entry in data:
 
-            print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
+            # Debug Check
+            # self.__transactions_pushed += 1
 
-            # current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
-            # current_document.set(entry)
+            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
+            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
+
+            current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
+            current_document.set(entry)
 
 
     """Mock WIP Method for Listener
@@ -323,11 +330,16 @@ class listener_operator:
 
     __settings_path = None
     __settings_file = None
+
+    __query_json = None
     __meta_json = None
 
-    def __init__(self, settings_path, meta_json=None):
+    def __init__(self, settings_path, query_json, meta_json=None):
+
         self.__settings_path = settings_path
         self.__settings_file = file_manager(self.__settings_path)
+
+        self.__query_json = query_json
 
         # TODO: Enforce Modularity
         self.__meta_json = meta_json
@@ -340,11 +352,10 @@ class listener_operator:
     def __conduct_listening(self):
 
         CREDENTIALS_FILE_PATH = "credentials.json"
-        SETTINGS_FILE_PATH = "settings.json"
         ID_CACHE_PATH = "transaction_id_cache.json"
 
-        gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-        idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
+        gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, self.__settings_path)
+        idm_instance = id_manager(ID_CACHE_PATH, self.__settings_path)
 
         # Listener operation
 
@@ -434,12 +445,12 @@ def main():
             print("Settings manager is not functional")
 
     # Procedes to Spool Listeners
-    # if settings_manager.is_functional():
-    #     settings_json = settings_manager.read_json()
-    #     for query in settings_json["queries"]:
-    #         query_json = settings_json["queries"][query]
-    #         if query != "terminal_information":
-    #             l_operator = listener_operator(SETTINGS_FILE_PATH)
+    if settings_manager.is_functional():
+        settings_json = settings_manager.read_json()
+        for query in settings_json["queries"]:
+            query_json = settings_json["queries"][query]
+            if query != "terminal_information":
+                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
 
 
 # Main execution
