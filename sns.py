@@ -306,7 +306,7 @@ class first_run_operator:
 
             endpoint = query["endpoint"]
 
-            # gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+            gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -476,12 +476,12 @@ def main():
             print("Settings manager is not functional")
 
     # Procedes to Spool Listeners
-    # if settings_manager.is_functional():
-    #     settings_json = settings_manager.read_json()
-    #     for query in settings_json["queries"]:
-    #         query_json = settings_json["queries"][query]
-    #         if query != "terminal_information":
-    #             l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
+    if settings_manager.is_functional():
+        settings_json = settings_manager.read_json()
+        for query in settings_json["queries"]:
+            query_json = settings_json["queries"][query]
+            if query != "terminal_information":
+                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
 
 
 # Main execution
