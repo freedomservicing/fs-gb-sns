@@ -3,3 +3,6 @@ transaction_id_cache.json
 listener_cache.json
 __pycache__
 privkey.json
+build
+dist
+sns.spec
