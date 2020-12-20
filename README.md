@@ -17,6 +17,6 @@
 * **settings.json** - If a query has a subquery, then the subquery must be assigned first
 
 # Code Copyright/License Notice
-Copyright © 2020, Freedom Servicing LLC, All rights reserved.
+Copyright © 2020, Freedom Servicing, LLC.
 
 The Freedom Servicing General Bytes Database Scraper Tool (GB_SNS) is released under the terms of the MIT license. See LICENSE for more information or see https://opensource.org/licenses/MIT.
