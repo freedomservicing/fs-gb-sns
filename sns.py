@@ -306,7 +306,7 @@ class first_run_operator:
 
             endpoint = query["endpoint"]
 
-            # gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+            gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -467,7 +467,7 @@ def main():
             query_json = settings_json["queries"][query]
             if not query_json["meta"]:
                 print("Not meta")
-                # l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
+                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
 
 
 # Main execution
