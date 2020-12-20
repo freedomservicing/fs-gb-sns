@@ -294,6 +294,7 @@ class first_run_operator:
 
         if gb_pipe_manager.get_pipe().is_functional():
 
+            # Update the meta cache if necessary
             reformatted_terminal_id = None
             query = settings_json["queries"][self.__query_name]
             if query["meta"]:
@@ -311,6 +312,9 @@ class first_run_operator:
             print("Unable to establish pipe manager. Check configuration and try again.")
 
 
+"""Update/append to the meta_cache entry for a given query
+:returns: A dictionary of the contents of the meta_cache for the given query.
+"""
 def update_meta_cache(query_dict, query_name, pipe, cache_path="meta_cache.json"):
 
     meta_cache_manager = file_manager(cache_path)
@@ -341,9 +345,12 @@ def update_meta_cache(query_dict, query_name, pipe, cache_path="meta_cache.json"
     #     # pass
     # print("\n")
 
+    # Add the query metadata if the entry doesn't exist, otherwise update it
     meta_cache_contents.update({query_name: reformatted_terminal_id})
+    # Write the updated json to the cache file
     meta_cache_manager.write_json(meta_cache_contents, cache_path)
     return reformatted_terminal_id
+
 
 """Execute listener procedure
 
