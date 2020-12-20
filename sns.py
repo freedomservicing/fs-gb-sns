@@ -262,6 +262,8 @@ class pipe_manager:
         return self.__pipe
 
 
+
+
 """Execute first run procedure
 
 ONLY TO BE INSTANCED FROM MAIN OF SNS
@@ -275,40 +277,6 @@ class first_run_operator:
         self.__query_name = query_name
         self.__meta = meta
         self.__initial_draw()
-
-    def __update_meta_cache(self, query_dict, query_name, pipe, cache_path="meta_cache.json"):
-
-        meta_cache_manager = file_manager(cache_path)
-        meta_cache_contents = meta_cache_manager.read_json() if meta_cache_manager.is_functional() else {}
-        metadata = pipe.get_fs_submission(query_name)
-        for entry in metadata:
-            print("\n", entry)
-            # pass
-        print("\n")
-
-        reformatted_terminal_id = {}
-        attributes = query_dict["attributes"]
-        relationships = query_dict["relationships"]
-
-        for entry in metadata:
-            attr_idx = 0
-            # While loop pairs keys and values and updates reformatted_terminal_id
-            while(attr_idx < len(attributes)):
-                key_name = relationships[attributes[attr_idx]]
-                attr_idx += 1
-                value_name = relationships[attributes[attr_idx]]
-                attr_idx += 1
-                data_key = str(entry[key_name])
-                reformatted_terminal_id[data_key] = str(entry[value_name])
-
-        for entry in reformatted_terminal_id:
-            print("\n", entry, reformatted_terminal_id[entry])
-            # pass
-        print("\n")
-
-        meta_cache_contents.update({query_name: reformatted_terminal_id})
-        meta_cache_manager.write_json(meta_cache_contents, cache_path)
-
 
 
     def __initial_draw(self):
@@ -330,7 +298,7 @@ class first_run_operator:
             query = settings_json["queries"][self.__query_name]
             if query["meta"]:
                 # TEST AREA: Retrieve Terminal Info
-                self.__update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
+                reformatted_terminal_id = update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
 
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
@@ -342,6 +310,40 @@ class first_run_operator:
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
 
+
+def update_meta_cache(query_dict, query_name, pipe, cache_path="meta_cache.json"):
+
+    meta_cache_manager = file_manager(cache_path)
+    meta_cache_contents = meta_cache_manager.read_json() if meta_cache_manager.is_functional() else {}
+    metadata = pipe.get_fs_submission(query_name)
+    # for entry in metadata:
+    #     print("\n", entry)
+    #     # pass
+    # print("\n")
+
+    reformatted_terminal_id = {}
+    attributes = query_dict["attributes"]
+    relationships = query_dict["relationships"]
+
+    for entry in metadata:
+        attr_idx = 0
+        # While loop pairs keys and values and updates reformatted_terminal_id
+        while(attr_idx < len(attributes)):
+            key_name = relationships[attributes[attr_idx]]
+            attr_idx += 1
+            value_name = relationships[attributes[attr_idx]]
+            attr_idx += 1
+            data_key = str(entry[key_name])
+            reformatted_terminal_id[data_key] = str(entry[value_name])
+
+    # for entry in reformatted_terminal_id:
+    #     print("\n", entry, reformatted_terminal_id[entry])
+    #     # pass
+    # print("\n")
+
+    meta_cache_contents.update({query_name: reformatted_terminal_id})
+    meta_cache_manager.write_json(meta_cache_contents, cache_path)
+    return reformatted_terminal_id
 
 """Execute listener procedure
 
@@ -386,7 +388,7 @@ class listener_operator:
         settings_json = self.__settings_file.read_json()
         for query in settings_json["queries"]:
             # TODO: Remove meta exlusion from hard-code
-            if query != "terminal_information":
+            if not query["meta"]:
                 listener_managers.append(listener_manager(listener(connector, settings_json["queries"][query], query, idm_instance, self.__load_meta(connector))))
 
 
