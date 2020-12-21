@@ -8,9 +8,7 @@
 # Dependencies
 * Make sure you have MySQL Connector/Python installed on your local system or the import wont work. You need to manually download this (probably)
     * Connector/Python can be downloaded from [here](https://dev.mysql.com/downloads/connector/python/).
-* `pip install firebase_admin`
-* You may need to install more:
-    * `pip install python_jwt gcloud sseclient pycrypto requests-toolbelt`
+* `pip install python_jwt gcloud sseclient pycrypto requests-toolbelt firebase_admin`
 
 # Dev Env
 * The `launch.json` in `.vscode` should be cross-platform if you use VSCode for your environment.
