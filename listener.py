@@ -78,7 +78,7 @@ class listener:
                 sr_size = len(sanitized_results)
 
                 if sr_size > 0:
-                    print("\nAdding Entry:", self.__tracked_value)
+                    print("\nAdding", sr_size, "Entries after", self.__tracked_value)
 
                     self.__tracked_value = sanitized_results[sr_size - 1][self.__active_column]
                     self.__connector.commit_data(sanitized_results, self.__endpoint, self.__idm, self.__meta_json)
@@ -86,8 +86,6 @@ class listener:
                     master_cache["listener_record"][self.__query_name]["last_id"] = self.__tracked_value
 
                     self.__cache_manager.write_json(master_cache)
-
-                    print("\nAdded Entry:", self.__tracked_value)
                 else:
                     print("\nNo New Entries Detected...")
 
