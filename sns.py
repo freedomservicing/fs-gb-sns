@@ -411,7 +411,7 @@ class listener_operator:
         settings_json = self.__settings_file.read_json()
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
-            if not query["meta"]:
+            if not query_json["meta"]:
                 meta_dict = get_meta_for_query(query_json)
                 listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
