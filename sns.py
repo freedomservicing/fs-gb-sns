@@ -262,6 +262,8 @@ class pipe_manager:
         return self.__pipe
 
 
+
+
 """Execute first run procedure
 
 ONLY TO BE INSTANCED FROM MAIN OF SNS
@@ -275,6 +277,7 @@ class first_run_operator:
         self.__query_name = query_name
         self.__meta = meta
         self.__initial_draw()
+
 
     def __initial_draw(self):
 
@@ -291,35 +294,72 @@ class first_run_operator:
 
         if gb_pipe_manager.get_pipe().is_functional():
 
+            # Update the meta cache if necessary
             reformatted_terminal_id = None
-
-            if self.__query_name == "transactions":
+            query = settings_json["queries"][self.__query_name]
+            if query["meta"]:
                 # TEST AREA: Retrieve Terminal Info
-                q_name = "terminal_information"
-                tdata = gb_pipe_manager.get_pipe().get_fs_submission(q_name)
-                for entry in tdata:
-                    # print("\n", entry)
-                    pass
-                # print("\n")
-
-                reformatted_terminal_id = {}
-                for entry in tdata:
-                    simple_id = str(entry["simple_id"])
-                    reformatted_terminal_id[simple_id] = str(entry["serial"])
-                for entry in reformatted_terminal_id:
-                    # print("\n", entry, reformatted_terminal_id[entry])
-                    pass
-                # print("\n")
+                reformatted_terminal_id = update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
 
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
 
-            endpoint = settings_json["queries"][self.__query_name]["endpoint"]
+            endpoint = query["endpoint"]
 
             gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
+
+
+"""Update/append to the meta_cache entry for a given query
+:returns: A dictionary of the contents of the meta_cache for the given query.
+"""
+def update_meta_cache(query_dict, query_name, pipe, cache_path="meta_cache.json"):
+    meta_cache_manager = file_manager(cache_path)
+    meta_cache_contents = meta_cache_manager.read_json() if meta_cache_manager.is_functional() else {}
+    metadata = pipe.get_fs_submission(query_name)
+
+    reformatted_terminal_id = {}
+    attributes = query_dict["attributes"]
+    relationships = query_dict["relationships"]
+
+    for entry in metadata:
+        attr_idx = 0
+        # While loop pairs keys and values and updates reformatted_terminal_id
+        while(attr_idx < len(attributes)):
+            key_name = relationships[attributes[attr_idx]]
+            attr_idx += 1
+            value_name = relationships[attributes[attr_idx]]
+            attr_idx += 1
+            data_key = str(entry[key_name])
+            reformatted_terminal_id[data_key] = str(entry[value_name])
+
+    # for entry in reformatted_terminal_id:
+    #     print("\n", entry, reformatted_terminal_id[entry])
+    #     # pass
+    # print("\n")
+
+    # Add the query metadata if the entry doesn't exist, otherwise update it
+    meta_cache_contents.update({query_name: reformatted_terminal_id})
+    # Write the updated json to the cache file
+    meta_cache_manager.write_json(meta_cache_contents, cache_path)
+    return reformatted_terminal_id
+
+
+def get_meta_for_query(query_name, query_json_path="settings.json", meta_json_path="meta_cache.json"):
+    query_manager = file_manager(query_json_path)
+    meta_manager = file_manager(meta_json_path)
+    if query_manager.is_functional():
+        meta_reference = query_manager.read_json()["queries"][query_name]["meta_reference"]
+        if meta_manager.is_functional():
+            return meta_manager.read_json()[meta_reference]
+        else:
+            print("Meta manager is not functional")
+    else:
+        print("Query manager is not functional")
+    # If the cache doesn't exist or if the query list doesn't exist, return None
+    return None
 
 
 """Execute listener procedure
@@ -364,36 +404,10 @@ class listener_operator:
         connector = gb_pipe_manager.get_pipe()
         settings_json = self.__settings_file.read_json()
         for query in settings_json["queries"]:
-            # TODO: Remove meta exlusion from hard-code
-            if query != "terminal_information":
-                listener_managers.append(listener_manager(listener(connector, settings_json["queries"][query], query, idm_instance, self.__load_meta(connector))))
-
-
-    """Temporary WIP Method for Enforcing Modularity for Meta jsons
-
-    CURRENTLY HARD-CODED FOR TERMINAL_INFORMATION
-    """
-    def __load_meta(self, pipe):
-
-        # TEST AREA: Retrieve Terminal Info
-        q_name = "terminal_information"
-        tdata = pipe.get_fs_submission(q_name)
-        for entry in tdata:
-            # print("\n", entry)
-            pass
-        # print("\n")
-
-        reformatted_terminal_id = {}
-        for entry in tdata:
-            simple_id = str(entry["simple_id"])
-            reformatted_terminal_id[simple_id] = str(entry["serial"])
-        for entry in reformatted_terminal_id:
-            # print("\n", entry, reformatted_terminal_id[entry])
-            pass
-        # print("\n")
-        # END
-
-        return reformatted_terminal_id
+            query_json = settings_json["queries"][query]
+            if not query["meta"]:
+                meta_dict = get_meta_for_query(query_json)
+                listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
 
 def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
@@ -436,7 +450,7 @@ def main():
             if 'all' in args.first_run or 'transactions' in args.first_run:
                 flush_transaction_id_cache()
             for query in settings_json["queries"]:
-                if (is_all or query in args.first_run) and query != "terminal_information":
+                if (is_all or query in args.first_run):
                     print("Starting First Run for Query:", query)
                     fr_operator = first_run_operator(query)
                     print("\nFirst Run Complete for Query:", query)
@@ -444,12 +458,15 @@ def main():
         else:
             print("Settings manager is not functional")
 
+    # print(get_meta_for_query("transactions")) # DEBUG
+
     # Procedes to Spool Listeners
     if settings_manager.is_functional():
         settings_json = settings_manager.read_json()
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
-            if query != "terminal_information":
+            if not query_json["meta"]:
+                # print("Not meta")
                 l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
 
 
