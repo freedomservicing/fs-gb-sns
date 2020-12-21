@@ -1,6 +1,7 @@
 credentials.json
 transaction_id_cache.json
 listener_cache.json
+meta_cache.json
 __pycache__
 privkey.json
 build

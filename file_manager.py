@@ -1,3 +1,7 @@
+## Copyright (c) 2020 Freedom Servicing, LLC
+## Distributed under the MIT software license, see the accompanying
+## file LICENSE.md or http://www.opensource.org/licenses/mit-license.php.
+
 """File utility for converting .json files to proper format
 
 :author Caden Koscinski:
@@ -16,12 +20,12 @@ class file_manager:
     """
     def __init__(self, file_path):
         self.__file_path = file_path
-        self.read_json()
-        # try:
-        #     self.read_json()
-        # except:
-        #     print("\nCannot Read the File at:", self.__file_path)
-        #     self.__functional = False
+        # self.read_json()
+        try:
+            self.read_json()
+        except:
+            print("\nCannot Read the File at:", self.__file_path)
+            self.__functional = False
 
 
     """Read the specified file
