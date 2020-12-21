@@ -1,8 +1,10 @@
+## Copyright (c) 2020 Freedom Servicing, LLC
+## Distributed under the MIT software license, see the accompanying
+## file LICENSE.md or http://www.opensource.org/licenses/mit-license.php.
 """Listener Boi
 
 :see: https://docs.google.com/document/d/1CmbGNYDnQZ6idU0OOlEq3P8plQmYn6p8NcZcOXrTZAw/edit
 """
-
 import json
 import time
 from file_manager import file_manager

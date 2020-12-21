@@ -1,3 +1,7 @@
+## Copyright (c) 2020 Freedom Servicing, LLC
+## Distributed under the MIT software license, see the accompanying
+## file LICENSE.md or http://www.opensource.org/licenses/mit-license.php.
+
 """Backend pipe for GB -> FB
 
 :author: Caden Koscinski
