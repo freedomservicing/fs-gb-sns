@@ -472,8 +472,9 @@ def main():
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
             if not query_json["meta"]:
+                meta_reference = query_json["meta_reference"]
                 # print("Not meta")
-                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json)
+                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_reference)
 
 
 # Main execution
