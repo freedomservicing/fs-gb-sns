@@ -68,7 +68,7 @@ class id_manager:
         server = self.__settings_file.read_json()["server"]
         machine_brand = self.__settings_file.read_json()["machine_brand"]
 
-        gb_id = observation_json["machine_id"]
+        gb_id = observation_json["simple_id"]
         gb_serial = gb_terminal_json[str(gb_id)]
 
         cache_json = self.__transaction_id_cache_file.read_json()
