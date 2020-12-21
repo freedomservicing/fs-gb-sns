@@ -294,6 +294,8 @@ class first_run_operator:
 
         if gb_pipe_manager.get_pipe().is_functional():
 
+            data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
+
             # Update the meta cache if necessary
             reformatted_terminal_id = None
             query = settings_json["queries"][self.__query_name]
@@ -301,21 +303,29 @@ class first_run_operator:
                 # TEST AREA: Retrieve Terminal Info
                 reformatted_terminal_id = update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
-
-            data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
+            else:
+                self.__initialize_listener_cache(data[-1])
 
             endpoint = query["endpoint"]
-
             gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
 
 
-    def __initialize_listener_cache(cache_path="listener_cache.json"):
+    def __initialize_listener_cache(self, sanitized_obs_json, settings_file_path="settings.json", cache_path="listener_cache.json"):
+        settings_manager = file_manager(settings_file_path)
         listener_cache_manager = file_manager(cache_path)
-        listener_cache_contents = listener_cache_manager.read_json() if listener_cache_manager.is_functional() else {}
-        pass
+        if settings_manager.is_functional():
+            query_json = settings_manager.read_json()["queries"][self.__query_name]
+            listener_column = query_json["listener_column"]
+            active_column = query_json["relationships"][listener_column]
+            if listener_cache_manager.is_functional():
+                listener_cache_contents = listener_cache_manager.read_json() if listener_cache_manager.is_functional() else {}
+
+                new_latest = {"listener_record" : { self.__query_name : {"last_id" : sanitized_obs_json[active_column]}}}
+                listener_cache_contents.update(new_latest)
+                listener_cache_manager.write_json(listener_cache_contents, cache_path)
 
 
 """Update/append to the meta_cache entry for a given query
