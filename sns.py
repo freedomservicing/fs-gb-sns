@@ -297,16 +297,19 @@ class first_run_operator:
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
 
             # Update the meta cache if necessary
-            reformatted_terminal_id = None
             query = settings_json["queries"][self.__query_name]
             if query["meta"]:
                 # TEST AREA: Retrieve Terminal Info
-                reformatted_terminal_id = update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
+                update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
             else:
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
-                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+                query_metadata = get_meta_for_query(self.__query_name)
+
+                # If there is no metadata for the query, commit_data will error
+
+                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
