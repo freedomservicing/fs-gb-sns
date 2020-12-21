@@ -3,7 +3,7 @@
 # <p align="center"><b>gb_sns</b></p>
 <p align="center"><b><i>Freedom Servicing General Bytes Database Scraper Tool</i></b></p>
 
-![gb_sns_license](https://img.shields.io/github/license/freedomservicing/gb_sns?color=purple&style=flat-square) ![gb_sns_open_issues](https://img.shields.io/github/issues-raw/freedomservicing/gb_sns?color=red&style=flat-square) ![gb_sns_closed_issues](https://img.shields.io/github/issues-closed-raw/freedomservicing/gb_sns?color=green&style=flat-square) ![gb_sns_last_commit](https://img.shields.io/github/last-commit/freedomservicing/gb_sns?style=flat-square) ![gb_sns_size](https://img.shields.io/github/repo-size/freedomservicing/gb_sns?style=flat-square) 
+![gb_sns_license](https://img.shields.io/github/license/freedomservicing/gb_sns?color=purple&style=flat-square) ![gb_sns_prs](https://img.shields.io/github/issues-pr-closed/freedomservicing/gb_sns?color=%234debc7) ![gb_sns_open_issues](https://img.shields.io/github/issues-raw/freedomservicing/gb_sns?color=red&style=flat-square) ![gb_sns_closed_issues](https://img.shields.io/github/issues-closed-raw/freedomservicing/gb_sns?color=green&style=flat-square) ![gb_sns_last_commit](https://img.shields.io/github/last-commit/freedomservicing/gb_sns?style=flat-square) ![gb_sns_size](https://img.shields.io/github/repo-size/freedomservicing/gb_sns?style=flat-square) 
 
 # Dependencies
 * Make sure you have MySQL Connector/Python installed on your local system or the import wont work. You need to manually download this (probably)
