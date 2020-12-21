@@ -312,6 +312,12 @@ class first_run_operator:
             print("Unable to establish pipe manager. Check configuration and try again.")
 
 
+    def __initialize_listener_cache(cache_path="listener_cache.json"):
+        listener_cache_manager = file_manager(cache_path)
+        listener_cache_contents = listener_cache_manager.read_json() if listener_cache_manager.is_functional() else {}
+        pass
+
+
 """Update/append to the meta_cache entry for a given query
 :returns: A dictionary of the contents of the meta_cache for the given query.
 """
