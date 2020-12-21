@@ -305,9 +305,8 @@ class first_run_operator:
                 # END
             else:
                 self.__initialize_listener_cache(data[-1])
-
-            endpoint = query["endpoint"]
-            gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+                endpoint = query["endpoint"]
+                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
