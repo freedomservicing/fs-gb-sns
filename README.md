@@ -3,6 +3,8 @@
 # <p align="center"><b>gb_sns</b></p>
 <p align="center"><b><i>Freedom Servicing General Bytes Database Scraper Tool</i></b></p>
 
+![gb_sns_size](https://img.shields.io/github/repo-size/freedomservicing/gb_sns?style=flat-square)
+
 # Dependencies
 * Make sure you have MySQL Connector/Python installed on your local system or the import wont work. You need to manually download this (probably)
     * Connector/Python can be downloaded from [here](https://dev.mysql.com/downloads/connector/python/).
