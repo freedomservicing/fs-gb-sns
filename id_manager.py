@@ -14,6 +14,7 @@ from file_manager import file_manager
 class id:
 
     __organization = None
+    __server = None
     __brand = None
     __machine = None
     __transaction = None
@@ -29,13 +30,14 @@ class id:
 
     def __build_id(self):
         self.__organization = self.__properties_json["organization"]
+        self.__server = self.__properties_json["server"]
         self.__brand = self.__properties_json["brand"]
         self.__machine = self.__properties_json["machine"]
         self.__transaction = self.__properties_json["transaction"]
         self.__id_string = self.__format_id()
 
     def __format_id(self):
-        return self.__organization + "-" + self.__brand + "-" + self.__machine + "-" + self.__transaction
+        return self.__organization + "-" + self.__server + "-" + self.__brand + "-" + self.__machine + "-" + self.__transaction
 
     def get_id_string(self):
         return self.__id_string
@@ -67,6 +69,7 @@ class id_manager:
     def issue_id(self, observation_json, gb_terminal_json):
 
         organization = self.__settings_file.read_json()["organization"]
+        server = self.__settings_file.read_json()["server"]
         machine_brand = self.__settings_file.read_json()["machine_brand"]
 
         gb_id = observation_json["machine_id"]
@@ -97,7 +100,7 @@ class id_manager:
         # Update cache
         self.__transaction_id_cache_file.write_json(cache_json)
 
-        nid = id({"organization": organization, "brand": machine_brand, "machine": machine_id, "transaction": transaction_id})
+        nid = id({"organization": organization, "server": server, "brand": machine_brand, "machine": machine_id, "transaction": transaction_id})
 
         return nid.get_id_string()
 

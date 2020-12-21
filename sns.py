@@ -18,7 +18,7 @@ import mysql.connector as connector
 from mysql.connector import errorcode
 from id_manager import id_manager
 from file_manager import file_manager
-from listener import listener_manager
+from listener import listener, listener_manager
 import os
 import json
 
@@ -34,6 +34,9 @@ class gb_pipe:
 
     # Will be set to false during construction if a connection to either DB fails
     __functional = True
+
+    # Debug for checking pagination
+    __transactions_pushed = 0
 
 
     """Constructor
@@ -85,7 +88,7 @@ class gb_pipe:
     :see: settings.json/attributes
     :returns: formatted mysql search query
     """
-    def __get_query(self, query_name):
+    def get_query(self, query_name):
         queryString = "SELECT"
         for attribute in self.__settings["queries"][query_name]["attributes"]:
             queryString = queryString + " " + attribute + ","
@@ -97,9 +100,9 @@ class gb_pipe:
     :param query: valid mysql query
     :returns: list of observations
 
-    If entries is left as default, the entire db will be queries
+    If entries is left as default, all observations from the query will be returned
     """
-    def __submit_query(self, query, entries=-1):
+    def submit_query(self, query, entries=-1):
         cursor = self.__mysqlDB.cursor()
         cursor.execute(query)
         mysql_data = []
@@ -119,7 +122,7 @@ class gb_pipe:
     :see: settings.json/attributes
     :returns: dict form of all observations
     """
-    def __restructure_query_response(self, query_name, mysql_observations):
+    def restructure_query_response(self, query_name, mysql_observations):
         attributes = self.__settings["queries"][query_name]["attributes"]
         mysql_bound_data = []
         for observation in mysql_observations:
@@ -137,7 +140,7 @@ class gb_pipe:
     :returns: formatted JSON with keys binding mysql values
     """
     def get_formatted_query(self, query_name):
-        return self.__restructure_query_response(query_name, self.__submit_query(self.__get_query(query_name)))
+        return self.restructure_query_response(query_name, self.submit_query(self.get_query(query_name)))
 
 
     """Return the status of the pipe - True if both GB and FS connections are live
@@ -149,7 +152,7 @@ class gb_pipe:
 
     """Convert data into a format suitable for FS submission
     :param mysql_observation: formatted mysql_observation from an entry generated
-    by self.__restructure_query_response()
+    by self.restructure_query_response()
     :see: settings.json/relationships
     :returns: restructured json aligned with FS structure
     """
@@ -176,10 +179,10 @@ class gb_pipe:
 
     """Prepare a JSON for FS submission by invoking sanitation methods
     :param mysql_observations: formatted mysql query - generated from
-    self.__restructure_query_response()
+    self.restructure_query_response()
     :returns: sanitized JSON
     """
-    def __prepare_fs_submission(self, mysql_observations, query_name):
+    def prepare_fs_submission(self, mysql_observations, query_name):
         prepped_data = []
 
         for observation in mysql_observations:
@@ -193,7 +196,7 @@ class gb_pipe:
     :see: settings.json/relationships
     """
     def get_fs_submission(self, query_name):
-        return self.__prepare_fs_submission(self.get_formatted_query(query_name), query_name)
+        return self.prepare_fs_submission(self.get_formatted_query(query_name), query_name)
 
 
     """Commit data to the FS
@@ -206,6 +209,10 @@ class gb_pipe:
 
         for entry in data:
 
+            # Debug Check
+            # self.__transactions_pushed += 1
+
+            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
 
             current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
@@ -259,6 +266,8 @@ class pipe_manager:
         return self.__pipe
 
 
+
+
 """Execute first run procedure
 
 ONLY TO BE INSTANCED FROM MAIN OF SNS
@@ -272,6 +281,7 @@ class first_run_operator:
         self.__query_name = query_name
         self.__meta = meta
         self.__initial_draw()
+
 
     def __initial_draw(self):
 
@@ -288,35 +298,93 @@ class first_run_operator:
 
         if gb_pipe_manager.get_pipe().is_functional():
 
-            reformatted_terminal_id = None
-
-            if self.__query_name == "transactions":
-                # TEST AREA: Retrieve Terminal Info
-                q_name = "terminal_information"
-                tdata = gb_pipe_manager.get_pipe().get_fs_submission(q_name)
-                for entry in tdata:
-                    # print("\n", entry)
-                    pass
-                # print("\n")
-
-                reformatted_terminal_id = {}
-                for entry in tdata:
-                    simple_id = str(entry["simple_id"])
-                    reformatted_terminal_id[simple_id] = str(entry["serial"])
-                for entry in reformatted_terminal_id:
-                    # print("\n", entry, reformatted_terminal_id[entry])
-                    pass
-                # print("\n")
-                # END
-
             data = gb_pipe_manager.get_pipe().get_fs_submission(self.__query_name)
 
-            endpoint = settings_json["queries"][self.__query_name]["endpoint"]
+            # Update the meta cache if necessary
+            query = settings_json["queries"][self.__query_name]
+            if query["meta"]:
+                # TEST AREA: Retrieve Terminal Info
+                update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
+                # END
+            else:
+                self.__initialize_listener_cache(data[-1])
+                endpoint = query["endpoint"]
+                query_metadata = get_meta_for_query(self.__query_name)
 
-            gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, reformatted_terminal_id)
+                # If there is no metadata for the query, commit_data will error
+
+                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
+
+
+    def __initialize_listener_cache(self, sanitized_obs_json, settings_file_path="settings.json", cache_path="listener_cache.json"):
+        settings_manager = file_manager(settings_file_path)
+        listener_cache_manager = file_manager(cache_path)
+        if settings_manager.is_functional():
+            query_json = settings_manager.read_json()["queries"][self.__query_name]
+            listener_column = query_json["listener_column"]
+            active_column = query_json["relationships"][listener_column]
+
+            listener_cache_contents = listener_cache_manager.read_json() if listener_cache_manager.is_functional() else {}
+            new_latest = {"listener_record" : { self.__query_name : {"last_id" : sanitized_obs_json[active_column]}}}
+            listener_cache_contents.update(new_latest)
+            listener_cache_manager.write_json(listener_cache_contents, cache_path)
+        else:
+            print("Query json is not functional.")
+
+
+
+
+"""Update/append to the meta_cache entry for a given query
+:returns: A dictionary of the contents of the meta_cache for the given query.
+"""
+def update_meta_cache(query_dict, query_name, pipe, cache_path="meta_cache.json"):
+    meta_cache_manager = file_manager(cache_path)
+    meta_cache_contents = meta_cache_manager.read_json() if meta_cache_manager.is_functional() else {}
+    metadata = pipe.get_fs_submission(query_name)
+
+    reformatted_terminal_id = {}
+    attributes = query_dict["attributes"]
+    relationships = query_dict["relationships"]
+
+    for entry in metadata:
+        attr_idx = 0
+        # While loop pairs keys and values and updates reformatted_terminal_id
+        while(attr_idx < len(attributes)):
+            key_name = relationships[attributes[attr_idx]]
+            attr_idx += 1
+            value_name = relationships[attributes[attr_idx]]
+            attr_idx += 1
+            data_key = str(entry[key_name])
+            reformatted_terminal_id[data_key] = str(entry[value_name])
+
+    # for entry in reformatted_terminal_id:
+    #     print("\n", entry, reformatted_terminal_id[entry])
+    #     # pass
+    # print("\n")
+
+    # Add the query metadata if the entry doesn't exist, otherwise update it
+    meta_cache_contents.update({query_name: reformatted_terminal_id})
+    # Write the updated json to the cache file
+    meta_cache_manager.write_json(meta_cache_contents, cache_path)
+    return reformatted_terminal_id
+
+
+def get_meta_for_query(query_name, query_json_path="settings.json", meta_json_path="meta_cache.json"):
+    query_manager = file_manager(query_json_path)
+    meta_manager = file_manager(meta_json_path)
+    if query_manager.is_functional():
+        meta_reference = query_manager.read_json()["queries"][query_name]["meta_reference"]
+        if meta_manager.is_functional():
+            return meta_manager.read_json()[meta_reference]
+        else:
+            print("Meta manager is not functional")
+    else:
+        print("Query manager is not functional")
+    # If the cache doesn't exist or if the query list doesn't exist, return None
+    return None
 
 
 """Execute listener procedure
@@ -325,21 +393,46 @@ ONLY TO BE INSTANCED FROM MAIN OF SNS
 """
 class listener_operator:
 
-    def __init__(self):
-        self.__conduct_listening()
+    __settings_path = None
+    __settings_file = None
+
+    __query_json = None
+    __meta_json = None
+
+    def __init__(self, settings_path, query_json, meta_json=None):
+
+        self.__settings_path = settings_path
+        self.__settings_file = file_manager(self.__settings_path)
+
+        self.__query_json = query_json
+
+        # TODO: Enforce Modularity
+        self.__meta_json = meta_json
+
+        if self.__settings_file.is_functional():
+            self.__conduct_listening()
+        else:
+            print("Cannot Conduct Listening Due to Settings File Issue")
 
     def __conduct_listening(self):
+
+        CREDENTIALS_FILE_PATH = "credentials.json"
+        ID_CACHE_PATH = "transaction_id_cache.json"
+
+        gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, self.__settings_path)
+        idm_instance = id_manager(ID_CACHE_PATH, self.__settings_path)
 
         # Listener operation
 
         # TODO: Implement listener and regulate data submissions
-        # reference_settings = file_manager(SETTINGS_FILE_PATH)
-        # listener_managers = []
-        # for query in reference_settings.read_json()["queries"]:
-        #     connector = gb_pipe_manager.get_pipe()
-        #     listener_managers.append(listener_manager(listener(connector, query)))
-
-        pass
+        listener_managers = []
+        connector = gb_pipe_manager.get_pipe()
+        settings_json = self.__settings_file.read_json()
+        for query in settings_json["queries"]:
+            query_json = settings_json["queries"][query]
+            if not query_json["meta"]:
+                meta_dict = get_meta_for_query(query)
+                listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
 
 def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
@@ -382,7 +475,7 @@ def main():
             if 'all' in args.first_run or 'transactions' in args.first_run:
                 flush_transaction_id_cache()
             for query in settings_json["queries"]:
-                if (is_all or query in args.first_run) and query != "terminal_information":
+                if (is_all or query in args.first_run):
                     print("Starting First Run for Query:", query)
                     fr_operator = first_run_operator(query)
                     print("\nFirst Run Complete for Query:", query)
@@ -390,8 +483,18 @@ def main():
         else:
             print("Settings manager is not functional")
 
+    # print(get_meta_for_query("transactions")) # DEBUG
+
     # Procedes to Spool Listeners
-    l_operator = listener_operator()
+    if settings_manager.is_functional():
+        settings_json = settings_manager.read_json()
+        for query in settings_json["queries"]:
+            query_json = settings_json["queries"][query]
+            if not query_json["meta"]:
+                meta_data = get_meta_for_query(query)
+                # print("Not meta")
+                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
+
 
 # Main execution
 if __name__ == "__main__":

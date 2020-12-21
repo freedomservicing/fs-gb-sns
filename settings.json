@@ -1,6 +1,7 @@
 {
   "firestoreAddress": "fgcomplianceportal",
   "organization": "00000",
+  "server": "000",
   "machine_brand": "0",
   "queries": {
     "terminal_information": {
@@ -23,6 +24,7 @@
       "meta_reference": "terminal_information",
       "attributeTable": "transactionrecord",
       "attributes": [
+        "id",
         "cashamount",
         "cashcurrency",
         "cellphoneused",
@@ -53,6 +55,7 @@
       "listener_interval": 60,
       "fs_destination": "piped_transactions",
       "relationships": {
+        "id": "gb_id",
         "cashamount": "amount_fiat_entered",
         "cryptocurrency": "crypto",
         "cryptoaddress": "crypto_address",
