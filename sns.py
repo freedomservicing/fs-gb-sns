@@ -320,12 +320,15 @@ class first_run_operator:
             query_json = settings_manager.read_json()["queries"][self.__query_name]
             listener_column = query_json["listener_column"]
             active_column = query_json["relationships"][listener_column]
-            if listener_cache_manager.is_functional():
-                listener_cache_contents = listener_cache_manager.read_json() if listener_cache_manager.is_functional() else {}
 
-                new_latest = {"listener_record" : { self.__query_name : {"last_id" : sanitized_obs_json[active_column]}}}
-                listener_cache_contents.update(new_latest)
-                listener_cache_manager.write_json(listener_cache_contents, cache_path)
+            listener_cache_contents = listener_cache_manager.read_json() if listener_cache_manager.is_functional() else {}
+            new_latest = {"listener_record" : { self.__query_name : {"last_id" : sanitized_obs_json[active_column]}}}
+            listener_cache_contents.update(new_latest)
+            listener_cache_manager.write_json(listener_cache_contents, cache_path)
+        else:
+            print("Query json is not functional.")
+
+
 
 
 """Update/append to the meta_cache entry for a given query
