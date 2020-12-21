@@ -19,4 +19,4 @@
 # Code Copyright/License Notice
 Copyright © 2020, Freedom Servicing, LLC.
 
-The Freedom Servicing General Bytes Database Scraper Tool (GB_SNS) is released under the terms of the MIT license. See LICENSE.md for more information or see https://opensource.org/licenses/MIT.
+The Freedom Servicing General Bytes Database Scraper Tool (GB_SNS) is released under the terms of the MIT license. See [LICENSE.md](https://github.com/freedomservicing/gb_sns/blob/main/LICENSE.md) for more information or see https://opensource.org/licenses/MIT.
