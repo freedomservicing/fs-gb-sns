@@ -53,11 +53,12 @@ class id_manager:
         cache_json = self.__id_cache_file.read_json()
 
         query_name = self.__query_name
-        obs_id = query_name
+        obs_id = None
         query_id = None
         if meta_json is not None:
             meta_id = observation_json[observation_reference]
             gb_serial = meta_json[str(meta_id)]
+
             if gb_serial in cache_json[query_name]:
                 obs_id = cache_json[query_name][gb_serial][observation_reference]
                 query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}_id"])
@@ -74,14 +75,18 @@ class id_manager:
                 cache_json[query_name][gb_serial][observation_reference] = cache_json[f"last_{observation_reference}_id"]
                 query_id = "000000"
                 cache_json[query_name][gb_serial][f"last_{query_name}_id"] = query_id
-        else:
-            obs_id = self.__increment_id(cache_json[f"last_{observation_reference}_id"])
-            query_id = self.__increment_id(cache_json[f"last_{query_name}_id"])
 
+            self.__id_string = obs_id + "-" + query_id
+        else:
+            if query_name in cache_json.keys():
+                new_id = self.__increment_id(cache_json[query_name])
+            else:
+                new_id = "000000"
+            self.__id_string = new_id
+            cache_json.update({query_name: {f"last_{query_name}_id": new_id}})
 
         # Update cache
         self.__id_cache_file.write_json(cache_json)
-        self.__id_string = obs_id + "-" + query_id
         return self.get_full_id_string()
 
 
