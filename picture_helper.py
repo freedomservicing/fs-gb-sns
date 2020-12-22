@@ -52,6 +52,8 @@ class PictureHelper:
             elif self.__file_type == '6':
                 self.__firebase_folder_ref = self.__storage_ref.child(f"customer_selfies/{self.__firebase_filename}")
 
+        self.__handle_picture()
+
     
     def __handle_picture(self):
         # https://stackoverflow.com/questions/52883534/firebase-storage-upload-file-python
