@@ -191,7 +191,7 @@
       "endpoint": "Identity Cells",
       "first_run": true
     },
-    "identity_cells": {
+    "identity_docs": {
       "meta": false,
       "meta_reference": null,
       "exclusion": "identity",

@@ -23,6 +23,115 @@ import os
 import json
 
 
+class identity:
+
+    def __init__(self):
+        pass
+
+class internal_identity_manager:
+
+    __identities_cache = None
+    __identity_notes_cache = None
+    __identity_pieces_cache = None
+    __identity_camera_images_cache = None
+    __identity_cells_cache = None
+    __identity_docs_cache = None
+    __identity_emails_cache = None
+    __identity_fingerprints_cache = None
+    __identity_personal_cache = None
+
+    def __init__(self):
+
+        self.__setter_dict = {
+        "id": self.set_id_cache,
+        "notes": self.set_notes_cache,
+        "pieces": self.set_pieces_cache,
+        "camera images": self.set_camera_images_cache,
+        "cells": self.set_cells_cache,
+        "docs": self.set_docs_cache,
+        "emails": self.set_emails_cache,
+        "fingerprints": self.set_fingerprints_cache,
+        "personal": self.set_personal_cache
+        }
+
+        self.__getter_dict = {
+        "id": self.get_id_cache,
+        "notes": self.get_notes_cache,
+        "pieces": self.get_pieces_cache,
+        "camera images": self.get_camera_images_cache,
+        "cells": self.get_cells_cache,
+        "docs": self.get_docs_cache,
+        "emails": self.get_emails_cache,
+        "fingerprints": self.get_fingerprints_cache,
+        "personal": self.get_personal_cache
+        }
+
+    # Umbrella Dicts
+
+    def get_setters(self):
+        return self.__setter_dict
+
+    def get_getters(self):
+        return self.__getter_dict
+
+    # Setters
+
+    def set_id_cache(self, cache):
+        self.__identities_cache = cache
+
+    def set_notes_cache(self, cache):
+        self.__identity_notes_cache = cache
+
+    def set_pieces_cache(self, cache):
+        self.__identity_pieces_cache = cache
+
+    def set_camera_images_cache(self, cache):
+        self.__identity_camera_images_cache = cache
+
+    def set_cells_cache(self, cache):
+        self.__identity_cells_cache = cache
+
+    def set_docs_cache(self, cache):
+        self.__identity_docs_cache = cache
+
+    def set_emails_cache(self, cache):
+        self.__identity_emails_cache = cache
+
+    def set_fingerprints_cache(self, cache):
+        self.__identity_fingerprints_cache = cache
+
+    def set_personal_cache(self, cache):
+        self.__identity_personal_cache = cache
+
+    # Getters
+
+    def get_id_cache(self):
+        return self.__identities_cache
+
+    def get_notes_cache(self):
+        return self.__identity_notes_cache
+
+    def get_pieces_cache(self):
+        return self.__identity_pieces_cache
+
+    def get_camera_images_cache(self):
+        return self.__identity_camera_images_cache
+
+    def get_cells_cache(self):
+        return self.__identity_cells_cache
+
+    def get_docs_cache(self):
+        return self.__identity_docs_cache
+
+    def get_emails_cache(self):
+        return self.__identity_emails_cache
+
+    def get_fingerprints_cache(self):
+        return self.__identity_fingerprints_cache
+
+    def get_personal_cache(self):
+        return self.__identity_personal_cache
+
 """Pipe connecting and facilitating the transfer of data between the GB mysql DB
 and the CaaS FS DB"""
 class gb_pipe:
@@ -266,8 +375,6 @@ class pipe_manager:
         return self.__pipe
 
 
-
-
 """Execute first run procedure
 
 ONLY TO BE INSTANCED FROM MAIN OF SNS
@@ -306,7 +413,7 @@ class first_run_operator:
                 # TEST AREA: Retrieve Terminal Info
                 update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
-            else:
+            elif query["exclusion"] == None:
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
                 query_metadata = get_meta_for_query(self.__query_name)
@@ -314,6 +421,9 @@ class first_run_operator:
                 # If there is no metadata for the query, commit_data will error
 
                 gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
+            else:
+                # Identity Insanity Inbound
+                pass
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -333,8 +443,6 @@ class first_run_operator:
             listener_cache_manager.write_json(listener_cache_contents, cache_path)
         else:
             print("Query json is not functional.")
-
-
 
 
 """Update/append to the meta_cache entry for a given query
@@ -472,6 +580,7 @@ def main():
         if settings_manager.is_functional():
             settings_json = settings_manager.read_json()
             is_all = 'all' in args.first_run
+            # TODO: Better arg handling - rm 'transactions'
             if 'all' in args.first_run or 'transactions' in args.first_run:
                 flush_transaction_id_cache()
             for query in settings_json["queries"]:
