@@ -5,8 +5,6 @@
 ## Helper class for dealing with locally stored images and firebase store
 ## Primary Contributor: Noah
 
-from _typeshed import NoneType
-from os import error
 
 
 class PictureHelper:
