@@ -75,8 +75,7 @@ class id_manager:
                 query_id = "000000"
                 cache_json[query_name][gb_serial][f"last_{query_name}_id"] = query_id
         else:
-            cache_json.update()
-
+            pass
 
         # Update cache
         self.__id_cache_file.write_json(cache_json)
