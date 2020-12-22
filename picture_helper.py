@@ -30,9 +30,9 @@ class PictureHelper:
             # TODO: Add an error here if it is None but self.__file_type isn't 2 or 6
         if gb_filepath is None:
             if self.__file_type == '2':
-                self.__gb_filepath = "/batm/data/documents_unsorted/{self.__gb_filename}"
+                self.__gb_filepath = f"/batm/data/documents_unsorted/{self.__gb_filename}"
             elif self.__file_type == '6':
-                self.__gb_filepath = "/batm/data/captures/{self.__gb_filename}"
+                self.__gb_filepath = f"/batm/data/captures/{self.__gb_filename}"
             # TODO: Add an error here if it is None but self.__file_type isn't 2 or 6
         else:
             self.__gb_filepath = gb_filepath
@@ -47,9 +47,9 @@ class PictureHelper:
 
         if firebase_folder_ref is None:
             if self.__file_type == '2':
-                self.__firebase_folder_ref = self.__storage_ref.child("id_pictures/{self.__firebase_filename}")
+                self.__firebase_folder_ref = self.__storage_ref.child(f"id_pictures/{self.__firebase_filename}")
             elif self.__file_type == '6':
-                self.__firebase_folder_ref = self.__storage_ref.child("customer_selfies/{self.__firebase_filename")
+                self.__firebase_folder_ref = self.__storage_ref.child(f"customer_selfies/{self.__firebase_filename}")
 
     
     def __handle_picture(self):
