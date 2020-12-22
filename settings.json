@@ -7,6 +7,7 @@
     "terminal_information": {
       "meta": true,
       "meta_reference": null,
+      "exclusion": null,
       "attributeTable": "terminal",
       "attributes": [
         "id",
@@ -22,6 +23,7 @@
     "transactions": {
       "meta": false,
       "meta_reference": "terminal_information",
+      "exclusion": null,
       "attributeTable": "transactionrecord",
       "attributes": [
         "id",
@@ -53,7 +55,6 @@
       ],
       "listener_column": "id",
       "listener_interval": 60,
-      "fs_destination": "piped_transactions",
       "relationships": {
         "id": "gb_id",
         "cashamount": "amount_fiat_entered",
@@ -68,6 +69,222 @@
       },
       "endpoint": "Transactions",
       "first_run": false
+    },
+    "identities": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identity",
+      "attributes": [
+        "id",
+        "configurationcashcurrency",
+        "created",
+        "lastupdatedat",
+        "note",
+        "publicid",
+        "registered",
+        "state",
+        "vipBuyDiscount",
+        "vipSellDiscount",
+        "watchlistbanned",
+        "watchlistlastscanat",
+        "createdByOrganization_id",
+        "createdByTerminal_id",
+        "registeredBy_id",
+        "externalid",
+        "type",
+        "language",
+        "agreedwithmarketingoptin"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_id",
+      },
+      "endpoint": "Identities",
+      "first_run": true
+    },
+    "identity_notes": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitynote",
+      "attributes": [
+        "id",
+        "createdat",
+        "deleted",
+        "deletedat",
+        "text",
+        "identity_id",
+        "user_id"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_note_id",
+      },
+      "endpoint": "Identity Notes",
+      "first_run": true
+    },
+    "identity_pieces": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiece",
+      "attributes": [
+        "id",
+        "createdat",
+        "piecetype",
+        "identity_id",
+        "registration"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_piece_id",
+      },
+      "endpoint": "Identity Pieces",
+      "first_run": true
+    },
+    "identity_camera_images": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiececameraimage",
+      "attributes": [
+        "id",
+        "captureid",
+        "created",
+        "filename",
+        "mimetype",
+        "transactionid",
+        "identity_id",
+        "identityPiece_id"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_camera_image_id",
+      },
+      "endpoint": "Identity Camera Images",
+      "first_run": true
+    },
+    "identity_cells": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiececellphone",
+      "attributes": [
+        "id",
+        "created",
+        "phonenumber",
+        "identity_id",
+        "identityPiece_id",
+        "phoneLineType",
+        "typeupdated"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_cell_id",
+      },
+      "endpoint": "Identity Cells",
+      "first_run": true
+    },
+    "identity_cells": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiecedocument",
+      "attributes": [
+        "id",
+        "created",
+        "filename",
+        "mimetype",
+        "identity_id",
+        "identityPiece_id"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_doc_id",
+      },
+      "endpoint": "Identity Docs",
+      "first_run": true
+    },
+    "identity_emails": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypieceemail",
+      "attributes": [
+        "id",
+        "created",
+        "emailaddress",
+        "identity_id",
+        "identityPiece_id"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_email_id",
+      },
+      "endpoint": "Identity Emails",
+      "first_run": true
+    },
+    "identity_fingerprints": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiecefingerprint",
+      "attributes": [
+        "id",
+        "created",
+        "identity_id",
+        "identityPiece_id"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_fingerprint_id",
+      },
+      "endpoint": "Identity Fingerprints",
+      "first_run": true
+    },
+    "identity_personal": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiecepersonalinfo",
+      "attributes": [
+        "id",
+        "contactaddress",
+        "contactcity",
+        "contactcountry",
+        "contactprovince",
+        "contactzip",
+        "created",
+        "documenttype",
+        "documentvalidto",
+        "firstname",
+        "idcardnumber",
+        "lastname",
+        "createdBy_id",
+        "identity_id",
+        "identityPiece_id",
+        "dateofbirth",
+        "documentnoexpiry",
+        "middlename",
+        "motherbirthname",
+        "ssn"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_personal_id",
+      },
+      "endpoint": "Identity Personal",
+      "first_run": true
     }
   }
 }
