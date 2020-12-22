@@ -13,6 +13,7 @@ class PictureHelper:
         self.__firebase_filename = firebase_filename
         self.__gb_filename = gb_filename
         self.__file_type = gb_filename[20]
+        self.__handle_pictures();
         
         # Handle optional overrides
         if firebase_filepath is None:
@@ -36,4 +37,7 @@ class PictureHelper:
         else:
             self.__extension = extension
 
-
+        # TODO: Add a check here to verify that the gb filepath/filename actually exists. If it doesn't throw an error.
+    
+    def __handle_picture(self):
+        
