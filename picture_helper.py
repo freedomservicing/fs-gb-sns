@@ -5,19 +5,16 @@
 ## Helper class for dealing with locally stored images and firebase store
 ## Primary Contributor: Noah
 
-
-
 class PictureHelper:
-
 
     # Ex: new PictureHelper("/id_pictures/", "XXXXX-XXX-X-XXXXXXX-X-X", "/batm/data/documents_unsorted/", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO.jpg")
     def __init__(self, firebase_filename, gb_filename, firebase_filepath = None, gb_filepath = None, extension = None):
         
         self.__firebase_filename = firebase_filename
         self.__gb_filename = gb_filename
+        self.__file_type = gb_filename[20]
         
         # Handle optional overrides
-        self.__file_type = gb_filename[20]
         if firebase_filepath is None:
             if self.__file_type == '2':
                 self.__firebase_filepath = "/id_pictures/"
