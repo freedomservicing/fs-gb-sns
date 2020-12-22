@@ -9,12 +9,13 @@ from firebase_admin import firestore, storage
 
 class PictureHelper:
 
-    # Ex: new PictureHelper("/id_pictures/", "XXXXX-XXX-X-XXXXXXX-X-X", "/batm/data/documents_unsorted/", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO.jpg")
+    # Ex Basic Usage: new PictureHelper("XXXXX-XXX-X-XXXXXXX-X-X", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO.jpg")
+    # Ex Adv. Usage: new PictureHelper("XXXXX-XXX-X-XXXXXXX-X-X", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO.jpg", storage.bucket("your_link").ref.child("folder/file"), ".png")
     def __init__(self, firebase_filename, gb_filename, firebase_folder_ref = None, gb_filepath = None, extension = None):
         
         self.__firebase_filename = firebase_filename
         self.__gb_filename = gb_filename
-        self.__file_type = gb_filename[20]
+        self.__file_type = firebase_filename[20]
         self.__handle_pictures();
         # https://firebase.google.com/docs/reference/admin/python/firebase_admin.storage
         # https://cloud.google.com/storage/docs/getting-bucket-information
