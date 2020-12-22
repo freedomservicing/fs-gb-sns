@@ -5,7 +5,7 @@
 ## Helper class for dealing with locally stored images and firebase store
 ## Primary Contributor: Noah
 
-import firebase_admin.storage as storage
+from firebase_admin import firestore, storage
 
 class PictureHelper:
 
@@ -24,14 +24,9 @@ class PictureHelper:
         # https://firebase.google.com/docs/storage/web/create-reference#create_a_reference
         self.__storage_ref = self.__storage.ref()
         self.__firebase_folder_ref = None
-
         
         # Handle optional overrides
-        if firebase_folder_ref is None:
-            if self.__file_type == '2':
-                self.__firebase_folder_ref = "id_pictures"
-            elif self.__file_type == '6':
-                self.__firebase_folder_ref = "customer_selfies"
+        
             # TODO: Add an error here if it is None but self.__file_type isn't 2 or 6
         if gb_filepath is None:
             if self.__file_type == '2':
@@ -47,6 +42,28 @@ class PictureHelper:
             self.__extension = extension
 
         # TODO: Add a check here to verify that the gb filepath/filename actually exists. If it doesn't throw an error.
+
+        self.__firebase_filename = self.__firebase_filename + self.__extension
+
+        if firebase_folder_ref is None:
+            if self.__file_type == '2':
+                self.__firebase_folder_ref = self.__storage_ref.child("id_pictures/{self.__firebase_filename}")
+            elif self.__file_type == '6':
+                self.__firebase_folder_ref = self.__storage_ref.child("customer_selfies/{self.__firebase_filename")
+
     
     def __handle_picture(self):
+        # https://stackoverflow.com/questions/52883534/firebase-storage-upload-file-python
+
+        blob = self.__storage.blob(self.__firebase_filename)
+        with open(self.__gb_filepath) as file_obj:
+            self.__firebase_folder_ref.put(file_obj)
+            print("Sent a file to firestore:")
+            print("     self.__gb_filepath: " + self.__gb_filepath)
+            print("     self.__firebase_folder_ref: " + self.__firebase_folder_ref)
+            print("     self.__firebase_filename: " + self.__firebase_filename)
+            print("     self.__")
+            
+            # blob.upload_from_file(file_obj, self.__firebase_folder_ref)
+
         
