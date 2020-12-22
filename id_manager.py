@@ -51,13 +51,13 @@ class id_manager:
     # gb_terminal_json will need to be queried from the gbDB and populated
     def issue_id(self, observation_json, observation_reference, meta_json=None):
         cache_json = self.__id_cache_file.read_json()
+
+        query_name = self.__query_name
+        obs_id = query_name
+        query_id = None
         if meta_json is not None:
             meta_id = observation_json[observation_reference]
             gb_serial = meta_json[str(meta_id)]
-
-            obs_id = None
-            query_id = None
-            query_name = self.__query_name
             if gb_serial in cache_json[query_name]:
                 obs_id = cache_json[query_name][gb_serial][observation_reference]
                 query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}_id"])
@@ -65,17 +65,19 @@ class id_manager:
             else:
                 # Adds new entry to the cache for each identified machine
                 if len(cache_json[query_name]) != 0:
-                    obs_id = self.__increment_id(cache_json[f"last_{obs_id}"])
+                    obs_id = self.__increment_id(cache_json[f"last_{observation_reference}_id"])
                 else:
-                    obs_id = cache_json[f"last_{obs_id}"]
-                cache_json[f"last_{obs_id}"] = obs_id
+                    obs_id = cache_json[f"last_{observation_reference}_id"]
+                cache_json[f"last_{observation_reference}_id"] = obs_id
                 cache_json[query_name][gb_serial] = {}
                 # cache_json[query_name][gb_serial]["brand"] = machine_brand
-                cache_json[query_name][gb_serial][observation_reference] = cache_json[f"last_{obs_id}"]
+                cache_json[query_name][gb_serial][observation_reference] = cache_json[f"last_{observation_reference}_id"]
                 query_id = "000000"
                 cache_json[query_name][gb_serial][f"last_{query_name}_id"] = query_id
         else:
-            pass
+            obs_id = self.__increment_id(cache_json[f"last_{observation_reference}_id"])
+            query_id = self.__increment_id(cache_json[f"last_{query_name}_id"])
+
 
         # Update cache
         self.__id_cache_file.write_json(cache_json)
