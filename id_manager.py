@@ -31,8 +31,8 @@ class id_manager:
         self.__settings_path = settings_path
         self.__settings_file = file_manager(self.__settings_path)
         self.__id_string = ""
-        if not self.__id_cache_file.is_functional():
-            self.__id_cache_file.write_json({})
+        if not self.__id_cache_file.is_functional() or self.__id_cache_file.read_json() is not {}:
+            self.__id_cache_file.write_json({query_name : {f"last_{query_name}": "000000"}})
         self.__functional = self.__id_cache_file.is_functional() and self.__settings_file.is_functional()
 
     def get_truncated_id_string(self):
@@ -66,20 +66,20 @@ class id_manager:
             else:
                 # Adds new entry to the cache for each identified machine
                 if len(cache_json[query_name]) != 0:
-                    obs_id = self.__increment_id(cache_json[f"last_{observation_reference}_id"])
+                    obs_id = self.__increment_id(cache_json[f"last_{observation_reference}"])
                 else:
-                    obs_id = cache_json[f"last_{observation_reference}_id"]
-                cache_json[f"last_{observation_reference}_id"] = obs_id
+                    obs_id = cache_json[f"last_{observation_reference}"]
+                cache_json[f"last_{observation_reference}"] = obs_id
                 cache_json[query_name][gb_serial] = {}
                 # cache_json[query_name][gb_serial]["brand"] = machine_brand
-                cache_json[query_name][gb_serial][observation_reference] = cache_json[f"last_{observation_reference}_id"]
+                cache_json[query_name][gb_serial][observation_reference] = cache_json[f"last_{observation_reference}"]
                 query_id = "000000"
                 cache_json[query_name][gb_serial][f"last_{query_name}_id"] = query_id
 
             self.__id_string = obs_id + "-" + query_id
         else:
             if query_name in cache_json.keys():
-                new_id = self.__increment_id(cache_json[query_name])
+                new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}_id"])
             else:
                 new_id = "000000"
             self.__id_string = new_id

@@ -205,7 +205,7 @@ class gb_pipe:
     """
     def commit_data(self, data, endpoint, id_manager, meta_json):
 
-        current_collection = self.__fsDB.collection(endpoint)
+        # current_collection = self.__fsDB.collection(endpoint)
 
         for entry in data:
 
@@ -213,10 +213,10 @@ class gb_pipe:
             # self.__transactions_pushed += 1
 
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
+            print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, "machine_id", meta_json))
 
-            current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
-            current_document.set(entry)
+            # current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
+            # current_document.set(entry)
 
 
     """Mock WIP Method for Listener
@@ -288,10 +288,10 @@ class first_run_operator:
         # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
         CREDENTIALS_FILE_PATH = "credentials.json"
         SETTINGS_FILE_PATH = "settings.json"
-        ID_CACHE_PATH = "transaction_id_cache.json"
+        ID_CACHE_PATH = "generic_id_cache.json"
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-        idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
+        idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
 
         settings_manager = file_manager(SETTINGS_FILE_PATH)
         settings_json = settings_manager.read_json()
@@ -310,7 +310,7 @@ class first_run_operator:
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
                 query_metadata = get_meta_for_query(self.__query_name)
-
+                print(query_metadata)
                 # If there is no metadata for the query, commit_data will error
 
                 gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
@@ -417,10 +417,9 @@ class listener_operator:
     def __conduct_listening(self):
 
         CREDENTIALS_FILE_PATH = "credentials.json"
-        ID_CACHE_PATH = "transaction_id_cache.json"
+        ID_CACHE_PATH = "generic_id_cache.json"
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, self.__settings_path)
-        idm_instance = id_manager(ID_CACHE_PATH, self.__settings_path)
 
         # Listener operation
 
@@ -430,18 +429,20 @@ class listener_operator:
         settings_json = self.__settings_file.read_json()
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
+            idm_instance = id_manager(query, ID_CACHE_PATH, self.__settings_path)
             if not query_json["meta"]:
                 meta_dict = get_meta_for_query(query)
                 listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
 
-def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
+def flush_transaction_id_cache(path_to_cache="generic_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
     print('Flushing transaction id cache')
     successful_flush = True
     try:
         cache_manager = file_manager(path_to_cache)
-        template_manager = file_manager(path_to_template)
-        cache_manager.write_json(template_manager.read_json())
+        # template_manager = file_manager(path_to_template)
+        # cache_manager.write_json(template_manager.read_json())
+        cache_manager.write_json({})
     except:
         successful_flush = False
     return successful_flush
@@ -493,7 +494,7 @@ def main():
             if not query_json["meta"]:
                 meta_data = get_meta_for_query(query)
                 # print("Not meta")
-                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
+                # l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
 
 
 # Main execution
