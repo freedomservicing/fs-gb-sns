@@ -6,3 +6,6 @@ generic_id_cache.json
 identities_cache.json
 __pycache__
 privkey.json
+build
+dist
+sns.spec
