@@ -207,15 +207,17 @@ class gb_pipe:
 
         current_collection = self.__fsDB.collection(endpoint)
 
+        meta_endpoint = self.__settings["queries"][id_manager.get_query_name()]["meta_endpoint"]
+
         for entry in data:
 
             # Debug Check
             # self.__transactions_pushed += 1
 
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            # print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, "machine_id", meta_json))
+            # print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_endpoint, meta_json))
 
-            current_document = current_collection.document(id_manager.issue_id(entry, "machine_id", meta_json))
+            current_document = current_collection.document(id_manager.issue_id(entry, meta_endpoint, meta_json))
             current_document.set(entry)
 
 

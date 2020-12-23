@@ -22,6 +22,7 @@
     "transactions": {
       "meta": false,
       "meta_reference": "terminal_information",
+      "meta_endpoint": "machine_id",
       "attributeTable": "transactionrecord",
       "attributes": [
         "id",

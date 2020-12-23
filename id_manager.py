@@ -38,6 +38,10 @@ class id_manager:
             self.__id_cache_file.write_json({query_name : {}})
         self.__functional = self.__id_cache_file.is_functional() and self.__settings_file.is_functional()
 
+
+    def get_query_name(self):
+        return self.__query_name
+
     def get_truncated_id_string(self):
         return self.__id_string
 
@@ -68,7 +72,7 @@ class id_manager:
                 cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
             else:
                 # Adds new entry to the cache for each identified machine
-                print(len(cache_json[query_name]))
+                # print(len(cache_json[query_name]))
                 if len(cache_json[query_name]) != 0:
                     obs_id = self.__increment_id(cache_json[query_name][f"last_{observation_reference}"])
                 else:
