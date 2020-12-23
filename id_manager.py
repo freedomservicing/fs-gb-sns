@@ -49,7 +49,7 @@ class id_manager:
         return organization + "-" + server + "-" + machine_brand
 
     # gb_terminal_json will need to be queried from the gbDB and populated
-    def issue_id(self, observation_json, observation_reference, meta_json=None):
+    def issue_id(self, observation_json, observation_reference="machine_id", meta_json=None):
         cache_json = self.__id_cache_file.read_json()
 
         query_name = self.__query_name
@@ -61,29 +61,29 @@ class id_manager:
 
             if gb_serial in cache_json[query_name]:
                 obs_id = cache_json[query_name][gb_serial][observation_reference]
-                query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}_id"])
-                cache_json[query_name][gb_serial][f"last_{query_name}_id"] = query_id
+                query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}"])
+                cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
             else:
                 # Adds new entry to the cache for each identified machine
                 if len(cache_json[query_name]) != 0:
-                    obs_id = self.__increment_id(cache_json[f"last_{observation_reference}"])
+                    obs_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
                 else:
-                    obs_id = cache_json[f"last_{observation_reference}"]
-                cache_json[f"last_{observation_reference}"] = obs_id
+                    obs_id = cache_json[query_name][f"last_{query_name}"]
+                cache_json[query_name][f"last_{observation_reference}"] = obs_id
                 cache_json[query_name][gb_serial] = {}
                 # cache_json[query_name][gb_serial]["brand"] = machine_brand
-                cache_json[query_name][gb_serial][observation_reference] = cache_json[f"last_{observation_reference}"]
+                cache_json[query_name][gb_serial][observation_reference] = cache_json[query_name][f"last_{observation_reference}"]
                 query_id = "000000"
-                cache_json[query_name][gb_serial][f"last_{query_name}_id"] = query_id
+                cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
 
             self.__id_string = obs_id + "-" + query_id
         else:
             if query_name in cache_json.keys():
-                new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}_id"])
+                new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
             else:
                 new_id = "000000"
             self.__id_string = new_id
-            cache_json.update({query_name: {f"last_{query_name}_id": new_id}})
+            cache_json.update({query_name: {f"last_{query_name}": new_id}})
 
         # Update cache
         self.__id_cache_file.write_json(cache_json)
