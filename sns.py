@@ -42,6 +42,7 @@ class identity:
         self.__identity_obs = identity_obs
         self.__gb_identity_id = self.__identity_obs[settings_json["queries"]["identities"]["relationships"]["id"]]
 
+
 class internal_identity_cache:
 
     # Constructor
@@ -147,33 +148,52 @@ class internal_identity_cache:
     def get_personal_cache(self):
         return self.__identity_personal_cache
 
-"""Execute procedures concerning the merging and committing of identities
 
-TODO: CORRECT AFTER GIDM IS RELEASED
+"""Execute procedures concerning the merging and committing of identities
 """
 class identity_operator:
 
-    def __init__(self, internal_cache, external_cache_path="identities_cache.json"):
+    def __init__(self, pipe, meta_cache_path="meta_cache.json"):
 
-        self.__internal_cache = internal_cache
+        self.__meta_cache_path = meta_cache_path
 
-        self.__external_cache_path = external_cache_path
-        self.__external_cache_file = file_manager(external_cache_path)
-
-        if self.__external_cache_file.is_functional():
-            self.__external_cache = self.__external_cache_file.read_json()
-        else:
-            self.__external_cache = {}
-
-        self.__processed_identities = []
+        self.__pipe = pipe
 
         self.__execute_merge_protocol()
 
     def __execute_merge_protocol(self):
 
-        identity_idm = id_manager()
-
         identities_proper = self.__internal_cache.get_getters()["identities proper"]()
+
+        print(identities_proper)
+
+        identity_idm = id_manager("identities")
+
+        self.__pipe.commit_data(identities_proper, identity_idm)
+
+        # self.__associate_identity_uids(identities_proper, self.__meta_cache_path)
+
+
+    """Override meta for identities with our UID system
+
+    CHECK IF IDENTITY SERIALS NEED TO BE PRESERVED
+    """
+    def __associate_identity_uids(identity_observations, meta_cache_path):
+
+        identity_idm = id_manager("identities")
+
+        meta_cache_file = file_manager(meta_cache_path)
+        meta_cache_json = {}
+
+        # TODO: Correct procedure if fails to read
+        if meta_cache_file.is_functional():
+            meta_cache_json = meta_cache_file.read_json()
+
+        for identity in identity_observations:
+            current_identity = identity_observations[identity]
+            meta_cache_json[identity] = identity_idm.issue_id(current_identity)
+
+        meta_cache_file.write_json(meta_cache_json)
 
 
 """Pipe connecting and facilitating the transfer of data between the GB mysql DB
@@ -356,11 +376,12 @@ class gb_pipe:
 
     DO NOT INVOKE OR OTHERWISE CALL - THIS IS A PROTOTYPE / PSUEDOCODE FUNCTION
     """
-    def commit_data(self, data, endpoint, id_manager, meta_json):
+    def commit_data(self, data, id_manager, meta_json=None):
 
-        current_collection = self.__fsDB.collection(endpoint)
+        endpoint = self.__settings["queries"][id_manager.get_query_name()]["endpoint"]
+        # current_collection = self.__fsDB.collection(endpoint)
 
-        meta_endpoint = self.__settings["queries"][id_manager.get_query_name()]["meta_endpoint"]
+        # meta_endpoint = self.__settings["queries"][id_manager.get_query_name()]["meta_endpoint"]
 
         for entry in data:
 
@@ -368,44 +389,17 @@ class gb_pipe:
             # self.__transactions_pushed += 1
 
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            # print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_endpoint, meta_json))
+            print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry))
 
-            current_document = current_collection.document(id_manager.issue_id(entry, meta_endpoint, meta_json))
-            current_document.set(entry)
-
-
-    """Override meta for identities with our UID system
-
-    CHECK IF IDENTITY SERIALS NEED TO BE PRESERVED
-    """
-    def associate_identity_uids(identity_observations, meta_cache_path):
-
-        identity_idm = id_manager()
-
-        meta_cache_file = file_manager(meta_cache_path)
-        meta_cache_json = {}
-
-        # TODO: Correct procedure if fails to read
-        if meta_cache_file.is_functional():
-            meta_cache_json = meta_cache_file.read_json()
-
-        for identity in identity_observations:
-            current_identity = identity_observations[identity]
-            meta_cache_json[identity] = identity_idm.issue_id()
-
-        meta_cache_file.write_json(meta_cache_json)
+            # current_document = current_collection.document(id_manager.issue_id(entry, meta_endpoint, meta_json))
+            # current_document.set(entry)
 
 
 """Manages and encapsulates the GB pipe"""
 class pipe_manager:
 
-    __credentials_file_path = None
-    __settings_file_path = None
-    __pipe = None
-
-
     # Constructor
-    def __init__(self, credentials_file_path, settings_file_path):
+    def __init__(self, credentials_file_path="credentials.json", settings_file_path="settings.json"):
         self.__credentials_file_path = credentials_file_path
         self.__settings_file_path = settings_file_path
         self.__pipe = self.__build_pipe()
@@ -481,6 +475,7 @@ class first_run_operator:
                 gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
             else:
                 # Identity Insanity Inbound
+                print("!")
                 cache_string = self.__query_name.split('_')[1]
                 self.__internal_cache.get_setters()[cache_string](data)
 
@@ -505,6 +500,7 @@ class first_run_operator:
 
     def get_internal_cache(self):
         return self.__internal_cache
+
 
 """Update/append to the meta_cache entry for a given query
 :returns: A dictionary of the contents of the meta_cache for the given query.
@@ -649,6 +645,7 @@ def main():
             if 'all' in args.first_run or 'transactions' in args.first_run:
                 flush_transaction_id_cache()
             for query in settings_json["queries"]:
+                print(query)
                 if (is_all or query in args.first_run):
                     print("Starting First Run for Query:", query)
 
@@ -665,19 +662,20 @@ def main():
             print("Settings manager is not functional")
 
     # More Identity Insanity
-    i_operator = identity_operator(INTERNAL_IDENTITY_CACHE)
+    gbpm = pipe_manager()
+    i_operator = identity_operator(INTERNAL_IDENTITY_CACHE, gbpm.get_pipe())
 
     # print(get_meta_for_query("transactions")) # DEBUG
 
     # Procedes to Spool Listeners
-    if settings_manager.is_functional():
-        settings_json = settings_manager.read_json()
-        for query in settings_json["queries"]:
-            query_json = settings_json["queries"][query]
-            if not query_json["meta"]:
-                meta_data = get_meta_for_query(query)
-                # print("Not meta")
-                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
+    # if settings_manager.is_functional():
+    #     settings_json = settings_manager.read_json()
+    #     for query in settings_json["queries"]:
+    #         query_json = settings_json["queries"][query]
+    #         if not query_json["meta"] and query_json["exclusion"] == None:
+    #             meta_data = get_meta_for_query(query)
+    #             # print("Not meta")
+    #             l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
 
 
 # Main execution

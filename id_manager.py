@@ -56,7 +56,7 @@ class id_manager:
         return organization + "-" + server + "-" + machine_brand
 
     # gb_terminal_json will need to be queried from the gbDB and populated
-    def issue_id(self, observation_json, observation_reference, meta_json=None):
+    def issue_id(self, observation_json, observation_reference=None, meta_json=None):
         cache_json = self.__id_cache_file.read_json()
 
         query_name = self.__query_name
