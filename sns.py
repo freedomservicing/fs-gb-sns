@@ -23,28 +23,42 @@ import os
 import json
 
 
+class identity_piece:
+
+    def __init__(self, piece_obs, settings_json):
+
+        self.__settings_json = settings_json
+
+        self.__piece_obs = piece_obs
+        self.__gb_piece_id = self.__identity_obs[settings_json["queries"]["identities"]["relationships"]["id"]]
+
+
 class identity:
 
-    def __init__(self):
-        pass
+    def __init__(self, identity_obs, settings_json):
+
+        self.__settings_json = settings_json
+
+        self.__identity_obs = identity_obs
+        self.__gb_identity_id = self.__identity_obs[settings_json["queries"]["identities"]["relationships"]["id"]]
 
 class internal_identity_cache:
-
-    __identities_cache = None
-    __identity_notes_cache = None
-    __identity_pieces_cache = None
-    __identity_camera_images_cache = None
-    __identity_cells_cache = None
-    __identity_docs_cache = None
-    __identity_emails_cache = None
-    __identity_fingerprints_cache = None
-    __identity_personal_cache = None
 
     # Constructor
     def __init__(self):
 
+        self.__identities_cache = None
+        self.__identity_notes_cache = None
+        self.__identity_pieces_cache = None
+        self.__identity_camera_images_cache = None
+        self.__identity_cells_cache = None
+        self.__identity_docs_cache = None
+        self.__identity_emails_cache = None
+        self.__identity_fingerprints_cache = None
+        self.__identity_personal_cache = None
+
         self.__setter_dict = {
-        "id": self.set_id_cache,
+        "identities proper": self.set_id_cache,
         "notes": self.set_notes_cache,
         "pieces": self.set_pieces_cache,
         "camera images": self.set_camera_images_cache,
@@ -56,7 +70,7 @@ class internal_identity_cache:
         }
 
         self.__getter_dict = {
-        "id": self.get_id_cache,
+        "identities proper": self.get_id_cache,
         "notes": self.get_notes_cache,
         "pieces": self.get_pieces_cache,
         "camera images": self.get_camera_images_cache,
@@ -132,6 +146,35 @@ class internal_identity_cache:
 
     def get_personal_cache(self):
         return self.__identity_personal_cache
+
+"""Execute procedures concerning the merging and committing of identities
+
+TODO: CORRECT AFTER GIDM IS RELEASED
+"""
+class identity_operator:
+
+    def __init__(self, internal_cache, external_cache_path="identities_cache.json"):
+
+        self.__internal_cache = internal_cache
+
+        self.__external_cache_path = external_cache_path
+        self.__external_cache_file = file_manager(external_cache_path)
+
+        if self.__external_cache_file.is_functional():
+            self.__external_cache = self.__external_cache_file.read_json()
+        else:
+            self.__external_cache = {}
+
+        self.__processed_identities = []
+
+        self.__execute_merge_protocol()
+
+    def __execute_merge_protocol(self):
+
+        identity_idm = id_manager()
+
+        identities_proper = self.__internal_cache.get_getters()["identities proper"]()
+
 
 """Pipe connecting and facilitating the transfer of data between the GB mysql DB
 and the CaaS FS DB"""
@@ -329,15 +372,26 @@ class gb_pipe:
             current_document.set(entry)
 
 
-    """Mock WIP Method for Listener
+    """Override meta for identities with our UID system
 
-    EXCERCISE CAUTION WHEN CALLING
+    CHECK IF IDENTITY SERIALS NEED TO BE PRESERVED
     """
-    def commit_listener_data(self, data, meta_path):
+    def associate_identity_uids(identity_observations, meta_cache_path):
 
-        # collection = self.__fsDB.collection(SOMETHING FROM META_PATH)
+        identity_idm = id_manager()
 
-        pass
+        meta_cache_file = file_manager(meta_cache_path)
+        meta_cache_json = {}
+
+        # TODO: Correct procedure if fails to read
+        if meta_cache_file.is_functional():
+            meta_cache_json = meta_cache_file.read_json()
+
+        for identity in identity_observations:
+            current_identity = identity_observations[identity]
+            meta_cache_json[identity] = identity_idm.issue_id()
+
+        meta_cache_file.write_json(meta_cache_json)
 
 
 """Manages and encapsulates the GB pipe"""

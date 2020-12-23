@@ -17,12 +17,42 @@
         "id": "simple_id",
         "serialnumber": "serial"
       },
-      "endpoint": "Terminal Info",
+      "first_run": true
+    },
+    "identity_serials": {
+      "meta": true,
+      "meta_reference": null,
+      "exclusion": null,
+      "attributeTable": "identity",
+      "attributes": [
+        "id",
+        "publicid"
+      ],
+      "relationships": {
+        "id": "simple_id",
+        "publicid": "publicid"
+      },
+      "first_run": true
+    },
+    "identity_pieces": {
+      "meta": true,
+      "meta_reference": null,
+      "exclusion": null,
+      "attributeTable": "identitypiece",
+      "attributes": [
+        "id",
+        "identity_id"
+      ],
+      "relationships": {
+        "id": "simple_id",
+        "identity_id": "assoc_identity"
+      },
       "first_run": true
     },
     "transactions": {
       "meta": false,
       "meta_reference": "terminal_information",
+      "meta_endpoint": "machine_id",
       "exclusion": null,
       "attributeTable": "transactionrecord",
       "attributes": [
