@@ -28,7 +28,7 @@ class identity:
     def __init__(self):
         pass
 
-class internal_identity_manager:
+class internal_identity_cache:
 
     __identities_cache = None
     __identity_notes_cache = None
@@ -40,6 +40,7 @@ class internal_identity_manager:
     __identity_fingerprints_cache = None
     __identity_personal_cache = None
 
+    # Constructor
     def __init__(self):
 
         self.__setter_dict = {
@@ -383,12 +384,13 @@ class first_run_operator:
 
     __query_name = None
     __meta = None
+    __internal_cache = None
 
-    def __init__(self, query_name, meta=False):
+    def __init__(self, query_name, meta=False, internal_cache=None):
         self.__query_name = query_name
         self.__meta = meta
+        self.__internal_cache = internal_cache
         self.__initial_draw()
-
 
     def __initial_draw(self):
 
@@ -423,7 +425,8 @@ class first_run_operator:
                 gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
             else:
                 # Identity Insanity Inbound
-                pass
+                cache_string = self.__query_name.split('_')[1]
+                self.__internal_cache.get_setters()[cache_string](data)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -444,6 +447,8 @@ class first_run_operator:
         else:
             print("Query json is not functional.")
 
+    def get_internal_cache(self):
+        return self.__internal_cache
 
 """Update/append to the meta_cache entry for a given query
 :returns: A dictionary of the contents of the meta_cache for the given query.
@@ -566,6 +571,8 @@ def main():
     SETTINGS_FILE_PATH = "settings.json"
     settings_manager = file_manager(SETTINGS_FILE_PATH)
 
+    INTERNAL_IDENTITY_CACHE = internal_identity_cache()
+
     # Create parser object, and add arguments
     parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
     parser.add_argument('-fl', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
@@ -586,11 +593,21 @@ def main():
             for query in settings_json["queries"]:
                 if (is_all or query in args.first_run):
                     print("Starting First Run for Query:", query)
-                    fr_operator = first_run_operator(query)
+
+                    # handle special non-meta cases as necessary
+                    if settings_json["queries"][query]["exclusion"] == "identity":
+                        fr_operator = first_run_operator(query, INTERNAL_IDENTITY_CACHE)
+                        INTERNAL_IDENTITY_CACHE = fr_operator.get_internal_cache()
+                    else:
+                        fr_operator = first_run_operator(query)
+
                     print("\nFirst Run Complete for Query:", query)
             print("\nCompleted First Run Procedures")
         else:
             print("Settings manager is not functional")
+
+    # More Identity Insanity
+    i_operator = identity_operator(INTERNAL_IDENTITY_CACHE)
 
     # print(get_meta_for_query("transactions")) # DEBUG
 
