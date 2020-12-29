@@ -1,0 +1,12 @@
+Source: gb_sns
+Maintainer: Freedom Servicing, LLC. <dev@freedomgateway.llc>
+Build-Depends: debhelper, dh-python, python3-all, python3-setuptools
+Section: devel
+Priority: optional
+Standards-Version: 3.9.1
+X-Python3-Version: >= 3.6
+
+Package: fs-gb-sns
+Architecture: all
+Description: Freedom Servicing General Bytes Database Scraper Tool
+Depends: ${python3:Depends}
