@@ -1,4 +1,4 @@
-Source: gb_sns
+Source: fs-gb-sns
 Maintainer: Freedom Servicing, LLC. <dev@freedomgateway.llc>
 Build-Depends: debhelper, dh-python, python3-all, python3-setuptools
 Section: devel
