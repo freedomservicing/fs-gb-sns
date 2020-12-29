@@ -88,6 +88,7 @@
     "identities": {
       "meta": false,
       "meta_reference": null,
+      "meta_endpoint": null,
       "exclusion": "identity_head",
       "attributeTable": "identity",
       "attributes": [

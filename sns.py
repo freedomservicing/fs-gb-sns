@@ -433,7 +433,9 @@ class first_run_operator:
         ID_CACHE_PATH = "generic_id_cache.json"
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-        idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
+
+        cache_file = file_manager(ID_CACHE_PATH)
+
 
         settings_manager = file_manager(SETTINGS_FILE_PATH)
         settings_json = settings_manager.read_json()
@@ -449,11 +451,12 @@ class first_run_operator:
                 update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
             elif query["exclusion"] == None:
+                idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
                 query_metadata = None
                 obs_ref = None
-                if "meta_endpoint" in query:
+                if query["meta_endpoint"] != None:
                     obs_ref = query["meta_endpoint"]
                     query_metadata = get_meta_for_query(self.__query_name)
                     print(query_metadata)
@@ -464,11 +467,12 @@ class first_run_operator:
                     gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
 
             elif query["exclusion"] == "identity_head":
+                idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
                 query_metadata = None
                 obs_ref = None
-                if "meta_endpoint" in query:
+                if query["meta_endpoint"] != None:
                     obs_ref = query["meta_endpoint"]
                     query_metadata = get_meta_for_query(self.__query_name)
                     print(query_metadata)
@@ -477,6 +481,15 @@ class first_run_operator:
 
                     id = idm_instance.issue_id(entry, obs_ref, query_metadata)
                     gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
+
+                    # Add the gb id for every identity
+                    # gb_simple_id = entry[query["relationships"]["id"]]
+
+                    # cache_json = cache_file.read_json()
+                    # cache_json[self.__query_name][gb_simple_id]
+                    # cache_file.write_json(cache_json)
+
+                    # idm_instance.update_cache_file_via_path(self.__query_name + "-" + gb_simple_id)
 
             else:
                 # Identity Insanity Inbound
