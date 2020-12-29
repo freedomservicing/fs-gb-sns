@@ -23,6 +23,179 @@ import os
 import json
 
 
+class identity_piece:
+
+    def __init__(self, piece_obs, settings_json):
+
+        self.__settings_json = settings_json
+
+        self.__piece_obs = piece_obs
+        self.__gb_piece_id = self.__identity_obs[settings_json["queries"]["identities"]["relationships"]["id"]]
+
+
+class identity:
+
+    def __init__(self, identity_obs, settings_json):
+
+        self.__settings_json = settings_json
+
+        self.__identity_obs = identity_obs
+        self.__gb_identity_id = self.__identity_obs[settings_json["queries"]["identities"]["relationships"]["id"]]
+
+
+class internal_identity_cache:
+
+    # Constructor
+    def __init__(self):
+
+        self.__identities_cache = None
+        self.__identity_notes_cache = None
+        self.__identity_pieces_cache = None
+        self.__identity_camera_images_cache = None
+        self.__identity_cells_cache = None
+        self.__identity_docs_cache = None
+        self.__identity_emails_cache = None
+        self.__identity_fingerprints_cache = None
+        self.__identity_personal_cache = None
+
+        self.__setter_dict = {
+        "identities proper": self.set_id_cache,
+        "notes": self.set_notes_cache,
+        "pieces": self.set_pieces_cache,
+        "camera images": self.set_camera_images_cache,
+        "cells": self.set_cells_cache,
+        "docs": self.set_docs_cache,
+        "emails": self.set_emails_cache,
+        "fingerprints": self.set_fingerprints_cache,
+        "personal": self.set_personal_cache
+        }
+
+        self.__getter_dict = {
+        "identities proper": self.get_id_cache,
+        "notes": self.get_notes_cache,
+        "pieces": self.get_pieces_cache,
+        "camera images": self.get_camera_images_cache,
+        "cells": self.get_cells_cache,
+        "docs": self.get_docs_cache,
+        "emails": self.get_emails_cache,
+        "fingerprints": self.get_fingerprints_cache,
+        "personal": self.get_personal_cache
+        }
+
+    # Umbrella Dicts
+
+    def get_setters(self):
+        return self.__setter_dict
+
+    def get_getters(self):
+        return self.__getter_dict
+
+    # Setters
+
+    def set_id_cache(self, cache):
+        self.__identities_cache = cache
+
+    def set_notes_cache(self, cache):
+        self.__identity_notes_cache = cache
+
+    def set_pieces_cache(self, cache):
+        self.__identity_pieces_cache = cache
+
+    def set_camera_images_cache(self, cache):
+        self.__identity_camera_images_cache = cache
+
+    def set_cells_cache(self, cache):
+        self.__identity_cells_cache = cache
+
+    def set_docs_cache(self, cache):
+        self.__identity_docs_cache = cache
+
+    def set_emails_cache(self, cache):
+        self.__identity_emails_cache = cache
+
+    def set_fingerprints_cache(self, cache):
+        self.__identity_fingerprints_cache = cache
+
+    def set_personal_cache(self, cache):
+        self.__identity_personal_cache = cache
+
+    # Getters
+
+    def get_id_cache(self):
+        return self.__identities_cache
+
+    def get_notes_cache(self):
+        return self.__identity_notes_cache
+
+    def get_pieces_cache(self):
+        return self.__identity_pieces_cache
+
+    def get_camera_images_cache(self):
+        return self.__identity_camera_images_cache
+
+    def get_cells_cache(self):
+        return self.__identity_cells_cache
+
+    def get_docs_cache(self):
+        return self.__identity_docs_cache
+
+    def get_emails_cache(self):
+        return self.__identity_emails_cache
+
+    def get_fingerprints_cache(self):
+        return self.__identity_fingerprints_cache
+
+    def get_personal_cache(self):
+        return self.__identity_personal_cache
+
+
+"""Execute procedures concerning the merging and committing of identities
+"""
+class identity_operator:
+
+    def __init__(self, pipe, meta_cache_path="meta_cache.json"):
+
+        self.__meta_cache_path = meta_cache_path
+
+        self.__pipe = pipe
+
+        self.__execute_merge_protocol()
+
+    def __execute_merge_protocol(self):
+
+        identities_proper = self.__internal_cache.get_getters()["identities proper"]()
+
+        print(identities_proper)
+
+        identity_idm = id_manager("identities")
+
+        self.__pipe.commit_data(identities_proper, identity_idm)
+
+        # self.__associate_identity_uids(identities_proper, self.__meta_cache_path)
+
+
+    """Override meta for identities with our UID system
+
+    CHECK IF IDENTITY SERIALS NEED TO BE PRESERVED
+    """
+    def __associate_identity_uids(identity_observations, meta_cache_path):
+
+        identity_idm = id_manager("identities")
+
+        meta_cache_file = file_manager(meta_cache_path)
+        meta_cache_json = {}
+
+        # TODO: Correct procedure if fails to read
+        if meta_cache_file.is_functional():
+            meta_cache_json = meta_cache_file.read_json()
+
+        for identity in identity_observations:
+            current_identity = identity_observations[identity]
+            meta_cache_json[identity] = identity_idm.issue_id(current_identity)
+
+        meta_cache_file.write_json(meta_cache_json)
+
+
 """Pipe connecting and facilitating the transfer of data between the GB mysql DB
 and the CaaS FS DB"""
 class gb_pipe:
@@ -203,9 +376,12 @@ class gb_pipe:
 
     DO NOT INVOKE OR OTHERWISE CALL - THIS IS A PROTOTYPE / PSUEDOCODE FUNCTION
     """
-    def commit_data(self, data, endpoint, id_manager, meta_json):
+    def commit_data(self, data, id_manager, meta_json=None):
 
-        current_collection = self.__fsDB.collection(endpoint)
+        endpoint = self.__settings["queries"][id_manager.get_query_name()]["endpoint"]
+        # current_collection = self.__fsDB.collection(endpoint)
+
+        # meta_endpoint = self.__settings["queries"][id_manager.get_query_name()]["meta_endpoint"]
 
         for entry in data:
 
@@ -213,33 +389,17 @@ class gb_pipe:
             # self.__transactions_pushed += 1
 
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json))
+            print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry))
 
-            current_document = current_collection.document(id_manager.issue_id(entry, meta_json))
-            current_document.set(entry)
-
-
-    """Mock WIP Method for Listener
-
-    EXCERCISE CAUTION WHEN CALLING
-    """
-    def commit_listener_data(self, data, meta_path):
-
-        # collection = self.__fsDB.collection(SOMETHING FROM META_PATH)
-
-        pass
+            # current_document = current_collection.document(id_manager.issue_id(entry, meta_endpoint, meta_json))
+            # current_document.set(entry)
 
 
 """Manages and encapsulates the GB pipe"""
 class pipe_manager:
 
-    __credentials_file_path = None
-    __settings_file_path = None
-    __pipe = None
-
-
     # Constructor
-    def __init__(self, credentials_file_path, settings_file_path):
+    def __init__(self, credentials_file_path="credentials.json", settings_file_path="settings.json"):
         self.__credentials_file_path = credentials_file_path
         self.__settings_file_path = settings_file_path
         self.__pipe = self.__build_pipe()
@@ -266,8 +426,6 @@ class pipe_manager:
         return self.__pipe
 
 
-
-
 """Execute first run procedure
 
 ONLY TO BE INSTANCED FROM MAIN OF SNS
@@ -276,22 +434,23 @@ class first_run_operator:
 
     __query_name = None
     __meta = None
+    __internal_cache = None
 
-    def __init__(self, query_name, meta=False):
+    def __init__(self, query_name, meta=False, internal_cache=None):
         self.__query_name = query_name
         self.__meta = meta
+        self.__internal_cache = internal_cache
         self.__initial_draw()
-
 
     def __initial_draw(self):
 
         # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
         CREDENTIALS_FILE_PATH = "credentials.json"
         SETTINGS_FILE_PATH = "settings.json"
-        ID_CACHE_PATH = "transaction_id_cache.json"
+        ID_CACHE_PATH = "generic_id_cache.json"
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
-        idm_instance = id_manager(ID_CACHE_PATH, SETTINGS_FILE_PATH)
+        idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
 
         settings_manager = file_manager(SETTINGS_FILE_PATH)
         settings_json = settings_manager.read_json()
@@ -306,14 +465,19 @@ class first_run_operator:
                 # TEST AREA: Retrieve Terminal Info
                 update_meta_cache(query, self.__query_name, gb_pipe_manager.get_pipe())
                 # END
-            else:
+            elif query["exclusion"] == None:
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
                 query_metadata = get_meta_for_query(self.__query_name)
-
+                print(query_metadata)
                 # If there is no metadata for the query, commit_data will error
 
                 gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
+            else:
+                # Identity Insanity Inbound
+                print("!")
+                cache_string = self.__query_name.split('_')[1]
+                self.__internal_cache.get_setters()[cache_string](data)
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -334,7 +498,8 @@ class first_run_operator:
         else:
             print("Query json is not functional.")
 
-
+    def get_internal_cache(self):
+        return self.__internal_cache
 
 
 """Update/append to the meta_cache entry for a given query
@@ -417,10 +582,9 @@ class listener_operator:
     def __conduct_listening(self):
 
         CREDENTIALS_FILE_PATH = "credentials.json"
-        ID_CACHE_PATH = "transaction_id_cache.json"
+        ID_CACHE_PATH = "generic_id_cache.json"
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, self.__settings_path)
-        idm_instance = id_manager(ID_CACHE_PATH, self.__settings_path)
 
         # Listener operation
 
@@ -430,18 +594,21 @@ class listener_operator:
         settings_json = self.__settings_file.read_json()
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
+            idm_instance = id_manager(query, ID_CACHE_PATH, self.__settings_path)
             if not query_json["meta"]:
                 meta_dict = get_meta_for_query(query)
                 listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
 
-def flush_transaction_id_cache(path_to_cache="transaction_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
-    print('Flushing transaction id cache')
+def flush_transaction_id_cache(path_to_cache="generic_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
+    print('Flushing id cache')
     successful_flush = True
     try:
         cache_manager = file_manager(path_to_cache)
-        template_manager = file_manager(path_to_template)
-        cache_manager.write_json(template_manager.read_json())
+        cache_manager.write_json({})
+        # template_manager = file_manager(path_to_template)
+        # cache_manager.write_json(template_manager.read_json())
+
     except:
         successful_flush = False
     return successful_flush
@@ -458,6 +625,8 @@ def main():
     SETTINGS_FILE_PATH = "settings.json"
     settings_manager = file_manager(SETTINGS_FILE_PATH)
 
+    INTERNAL_IDENTITY_CACHE = internal_identity_cache()
+
     # Create parser object, and add arguments
     parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
     parser.add_argument('-fl', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
@@ -472,28 +641,41 @@ def main():
         if settings_manager.is_functional():
             settings_json = settings_manager.read_json()
             is_all = 'all' in args.first_run
+            # TODO: Better arg handling - rm 'transactions'
             if 'all' in args.first_run or 'transactions' in args.first_run:
                 flush_transaction_id_cache()
             for query in settings_json["queries"]:
+                print(query)
                 if (is_all or query in args.first_run):
                     print("Starting First Run for Query:", query)
-                    fr_operator = first_run_operator(query)
+
+                    # handle special non-meta cases as necessary
+                    if settings_json["queries"][query]["exclusion"] == "identity":
+                        fr_operator = first_run_operator(query, INTERNAL_IDENTITY_CACHE)
+                        INTERNAL_IDENTITY_CACHE = fr_operator.get_internal_cache()
+                    else:
+                        fr_operator = first_run_operator(query)
+
                     print("\nFirst Run Complete for Query:", query)
             print("\nCompleted First Run Procedures")
         else:
             print("Settings manager is not functional")
 
+    # More Identity Insanity
+    gbpm = pipe_manager()
+    i_operator = identity_operator(INTERNAL_IDENTITY_CACHE, gbpm.get_pipe())
+
     # print(get_meta_for_query("transactions")) # DEBUG
 
     # Procedes to Spool Listeners
-    if settings_manager.is_functional():
-        settings_json = settings_manager.read_json()
-        for query in settings_json["queries"]:
-            query_json = settings_json["queries"][query]
-            if not query_json["meta"]:
-                meta_data = get_meta_for_query(query)
-                # print("Not meta")
-                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
+    # if settings_manager.is_functional():
+    #     settings_json = settings_manager.read_json()
+    #     for query in settings_json["queries"]:
+    #         query_json = settings_json["queries"][query]
+    #         if not query_json["meta"] and query_json["exclusion"] == None:
+    #             meta_data = get_meta_for_query(query)
+    #             # print("Not meta")
+    #             l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
 
 
 # Main execution
