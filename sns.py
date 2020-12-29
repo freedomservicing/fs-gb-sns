@@ -436,11 +436,12 @@ class first_run_operator:
         self.__initial_draw()
 
     def __initial_draw(self):
-
         # Remove .TEMPLATE from credentials.json.TEMPLATE and populate as necessary
         CREDENTIALS_FILE_PATH = "credentials.json"
         SETTINGS_FILE_PATH = "settings.json"
         ID_CACHE_PATH = "generic_id_cache.json"
+
+        self.flush_cache(self.__query_name, ID_CACHE_PATH)
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
         idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
@@ -493,6 +494,26 @@ class first_run_operator:
             listener_cache_manager.write_json(listener_cache_contents, cache_path)
         else:
             print("Query json is not functional.")
+
+
+    def flush_cache(self, query_name=None, path_to_cache="generic_id_cache.json"):
+        cache_manager = file_manager(path_to_cache)
+        if query_name is not None:
+            print(f'Flushing id cache for {query_name}')
+            successful_flush = True
+            try:
+                cache_contents = cache_manager.read_json() if cache_manager.is_functional() else {}
+                if query_name in cache_contents.keys():
+                    del cache_contents[query_name]
+                cache_manager.write_json(cache_contents)
+                # template_manager = file_manager(path_to_template)
+                # cache_manager.write_json(template_manager.read_json())
+
+            except:
+                successful_flush = False
+            return successful_flush
+        else:
+            cache_manager.write_json({})
 
     # def get_internal_cache(self):
     #     return self.__internal_cache
@@ -593,20 +614,6 @@ class listener_operator:
                 listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
 
-def flush_cache(path_to_cache="generic_id_cache.json"):
-    print('Flushing id cache')
-    successful_flush = True
-    try:
-        cache_manager = file_manager(path_to_cache)
-        cache_manager.write_json({})
-        # template_manager = file_manager(path_to_template)
-        # cache_manager.write_json(template_manager.read_json())
-
-    except:
-        successful_flush = False
-    return successful_flush
-
-
 """Establish an active listener and pipe between the GB backend and CaaS-FS frontend
 
 Connection to the FS requires access to a user's Google API service key.
@@ -626,15 +633,13 @@ def main():
     # Handle execution of arguments
     args = parser.parse_args()
     if args.flush_output:
-        flush_cache()
+        first_run_operator.flush_cache()
 
     if args.first_run is not None:
         if settings_manager.is_functional():
             settings_json = settings_manager.read_json()
             is_all = 'all' in args.first_run
             # TODO: Better arg handling - rm 'transactions'
-            if 'all' in args.first_run or 'transactions' in args.first_run:
-                flush_cache()
             for query in settings_json["queries"]:
                 print(query)
                 if (is_all or query in args.first_run):
