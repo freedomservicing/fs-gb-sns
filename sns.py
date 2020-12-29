@@ -617,6 +617,30 @@ def flush_transaction_id_cache(path_to_cache="generic_id_cache.json", path_to_te
         successful_flush = False
     return successful_flush
 
+# Sets any query's first_run propery to true if it is in arg_list
+def toggle_first_runs(settings_manager, arg_list):
+    is_all = 'all' in arg_list
+    settings_json = settings_manager.read_json()
+    # TODO: Better arg handling - rm 'transactions'
+    if is_all or 'transactions' in arg_list:
+        flush_transaction_id_cache()
+    for query in settings_json["queries"]:
+        if (is_all or query in arg_list) and not settings_json["queries"][query]["meta"]:
+            settings_json["queries"][query]["first_run"] = True
+    settings_manager.write_json(settings_json)
+
+# On a given query will assess if it needs to do first_run
+def handle_first_run_operation_for_query(settings_json, query_name):
+    query_first_run = settings_json["queries"][query_name]["first_run"]
+    if query_first_run:
+        print("Starting First Run for Query:", query_name)
+
+        # handle special non-meta cases as necessary
+        if settings_json["queries"][query_name]["exclusion"] == "identity":
+            fr_operator = first_run_operator(query_name)
+        else:
+            fr_operator = first_run_operator(query_name)
+        print("\nFirst Run Complete for Query:", query_name)
 
 """Establish an active listener and pipe between the GB backend and CaaS-FS frontend
 
@@ -643,41 +667,28 @@ def main():
 
     if args.first_run is not None:
         if settings_manager.is_functional():
-            settings_json = settings_manager.read_json()
-            is_all = 'all' in args.first_run
-            # TODO: Better arg handling - rm 'transactions'
-            if 'all' in args.first_run or 'transactions' in args.first_run:
-                flush_transaction_id_cache()
-            for query in settings_json["queries"]:
-                if (is_all or query in args.first_run):
-                    print("Starting First Run for Query:", query)
-
-                    # handle special non-meta cases as necessary
-                    if settings_json["queries"][query]["exclusion"] == "identity":
-                        fr_operator = first_run_operator(query, INTERNAL_IDENTITY_CACHE)
-                        INTERNAL_IDENTITY_CACHE = fr_operator.get_internal_cache()
-                    else:
-                        fr_operator = first_run_operator(query)
-
-                    print("\nFirst Run Complete for Query:", query)
-            print("\nCompleted First Run Procedures")
+            toggle_first_runs(settings_manager, args.first_run)
         else:
             print("Settings manager is not functional")
+    else:
+        # If first run not passed as an argument
 
-    # More Identity Insanity
-    i_operator = identity_operator(INTERNAL_IDENTITY_CACHE)
+        # More Identity Insanity
+        # i_operator = identity_operator(INTERNAL_IDENTITY_CACHE)
 
-    # print(get_meta_for_query("transactions")) # DEBUG
+        # Proceed to Execution
+        if settings_manager.is_functional():
+            settings_json = settings_manager.read_json()
+            for query in settings_json["queries"]:
 
-    # Procedes to Spool Listeners
-    if settings_manager.is_functional():
-        settings_json = settings_manager.read_json()
-        for query in settings_json["queries"]:
-            query_json = settings_json["queries"][query]
-            if not query_json["meta"]:
-                meta_data = get_meta_for_query(query)
-                # print("Not meta")
-                l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
+                # Handle first-run procedure
+                handle_first_run_operation_for_query(settings_json, query, INTERNAL_IDENTITY_CACHE)
+
+                # Spool listeners
+                query_json = settings_json["queries"][query]
+                if not query_json["meta"]:
+                    meta_data = get_meta_for_query(query)
+                    l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
 
 
 # Main execution
