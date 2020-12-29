@@ -35,23 +35,18 @@
       "first_run": true
     },
     "identity_pieces": {
-      "meta": false,
+      "meta": true,
       "meta_reference": null,
-      "exclusion": "identity",
+      "exclusion": null,
       "attributeTable": "identitypiece",
       "attributes": [
         "id",
-        "createdat",
-        "piecetype",
-        "identity_id",
-        "registration"
+        "identity_id"
       ],
-      "listener_column": "id",
-      "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_piece_id"
+        "id": "simple_id",
+        "identity_id": "assoc_identity"
       },
-      "endpoint": "Identity Pieces",
       "first_run": true
     },
     "transactions": {
@@ -103,7 +98,7 @@
         "cellphoneused": "phone_number"
       },
       "endpoint": "Transactions",
-      "first_run": true
+      "first_run": false
     },
     "identities": {
       "meta": false,
@@ -134,7 +129,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_id"
+        "id": "gb_identity_id",
       },
       "endpoint": "Identities",
       "first_run": true
@@ -156,9 +151,29 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_note_id"
+        "id": "gb_identity_note_id",
       },
       "endpoint": "Identity Notes",
+      "first_run": true
+    },
+    "identity_pieces": {
+      "meta": false,
+      "meta_reference": null,
+      "exclusion": "identity",
+      "attributeTable": "identitypiece",
+      "attributes": [
+        "id",
+        "createdat",
+        "piecetype",
+        "identity_id",
+        "registration"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_piece_id",
+      },
+      "endpoint": "Identity Pieces",
       "first_run": true
     },
     "identity_camera_images": {
@@ -179,7 +194,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_camera_image_id"
+        "id": "gb_identity_camera_image_id",
       },
       "endpoint": "Identity Camera Images",
       "first_run": true
@@ -201,7 +216,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_cell_id"
+        "id": "gb_identity_cell_id",
       },
       "endpoint": "Identity Cells",
       "first_run": true
@@ -222,7 +237,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_doc_id"
+        "id": "gb_identity_doc_id",
       },
       "endpoint": "Identity Docs",
       "first_run": true
@@ -242,7 +257,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_email_id"
+        "id": "gb_identity_email_id",
       },
       "endpoint": "Identity Emails",
       "first_run": true
@@ -261,7 +276,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_fingerprint_id"
+        "id": "gb_identity_fingerprint_id",
       },
       "endpoint": "Identity Fingerprints",
       "first_run": true
@@ -296,7 +311,7 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_personal_id"
+        "id": "gb_identity_personal_id",
       },
       "endpoint": "Identity Personal",
       "first_run": true
