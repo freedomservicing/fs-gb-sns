@@ -41,11 +41,7 @@ class file_manager:
         if output_file_path == None:
             output_file_path = self.__file_path
         with open(output_file_path, 'w') as f:
-            try:
-                json.dump(json_content, f)
-                self.__functional = True
-            except:
-                print("\nCannot write to file at:", self.__file_path)
+            json.dump(json_content, f)
 
 
     def is_functional(self):
