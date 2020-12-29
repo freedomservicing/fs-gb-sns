@@ -36,8 +36,14 @@ class id_manager:
         if (not self.__id_cache_file.is_functional() or len(self.__id_cache_file.read_json().keys()) == 0) and not is_meta:
             print("Initializing id cache for:", query_name)
             self.__id_cache_file.write_json({query_name : {}})
+        elif self.__id_cache_file.is_functional() and not is_meta:
+            print("Updating id cache for:", query_name)
+            cache_contents = self.__id_cache_file.read_json()
+            if cache_contents is None:
+                cache_contents = {}
+            cache_contents.update({query_name : {}})
+            self.__id_cache_file.write_json(cache_contents)
         self.__functional = self.__id_cache_file.is_functional() and self.__settings_file.is_functional()
-
 
     def get_query_name(self):
         return self.__query_name
@@ -86,7 +92,7 @@ class id_manager:
 
             self.__id_string = obs_id + "-" + query_id
         else:
-            if query_name in cache_json.keys():
+            if query_name in cache_json.keys() and f"last_{query_name}" in cache_json[query_name].keys():
                 new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
             else:
                 new_id = "000001"

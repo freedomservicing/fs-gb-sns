@@ -370,8 +370,8 @@ class gb_pipe:
     def commit_data(self, entry, endpoint, id):
 
         # current_collection = self.__fsDB.collection(endpoint)
-
-        print("\nAdding:\n", entry, "\nUsing ID: ", id)
+        pass
+        # print("\nAdding:\n", entry, "\nUsing ID: ", id)
 
         # current_document = current_collection.document(id)
         # current_document.set(entry)
@@ -430,8 +430,8 @@ class first_run_operator:
         CREDENTIALS_FILE_PATH = "credentials.json"
         SETTINGS_FILE_PATH = "settings.json"
         ID_CACHE_PATH = "generic_id_cache.json"
-
-        self.flush_cache(self.__query_name, ID_CACHE_PATH)
+        if not self.__meta:
+            self.flush_cache(self.__query_name, ID_CACHE_PATH)
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
         idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
