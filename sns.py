@@ -465,7 +465,20 @@ class first_run_operator:
                     gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
 
             elif query["exclusion"] == "identity_head":
-                pass
+                self.__initialize_listener_cache(data[-1])
+                endpoint = query["endpoint"]
+                query_metadata = None
+                obs_ref = None
+                if "meta_endpoint" in query:
+                    obs_ref = query["meta_endpoint"]
+                    query_metadata = get_meta_for_query(self.__query_name)
+                    print(query_metadata)
+
+                for entry in data:
+
+                    id = idm_instance.issue_id(entry, obs_ref, query_metadata)
+                    gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
+
             else:
                 # Identity Insanity Inbound
                 # cache_string = self.__query_name.split('_')[1]
