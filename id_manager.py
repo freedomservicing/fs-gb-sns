@@ -76,12 +76,12 @@ class id_manager:
                 if len(cache_json[query_name]) != 0:
                     obs_id = self.__increment_id(cache_json[query_name][f"last_{observation_reference}"])
                 else:
-                    obs_id = "000000"
+                    obs_id = "000001"
                 cache_json[query_name][f"last_{observation_reference}"] = obs_id
                 cache_json[query_name][gb_serial] = {}
                 # cache_json[query_name][gb_serial]["brand"] = machine_brand
                 cache_json[query_name][gb_serial][observation_reference] = cache_json[query_name][f"last_{observation_reference}"]
-                query_id = "000000"
+                query_id = "000001"
                 cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
 
             self.__id_string = obs_id + "-" + query_id
@@ -89,7 +89,7 @@ class id_manager:
             if query_name in cache_json.keys():
                 new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
             else:
-                new_id = "000000"
+                new_id = "000001"
             self.__id_string = new_id
             cache_json.update({query_name: {f"last_{query_name}": new_id}})
 

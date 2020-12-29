@@ -22,7 +22,7 @@ class b36:
         dec_val = 0
 
         for index in range(len(indexed_value) - 1, -1, -1):
-            dec_val += (self.__characters.index(indexed_value[index]) + 1) * (36 ** (len(indexed_value) - index - 1))
+            dec_val += self.__characters.index(indexed_value[index]) * (36 ** (len(indexed_value) - index - 1))
 
         return dec_val
 

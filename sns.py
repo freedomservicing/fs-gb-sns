@@ -369,9 +369,8 @@ class gb_pipe:
 
     DO NOT INVOKE OR OTHERWISE CALL - THIS IS A PROTOTYPE / PSUEDOCODE FUNCTION
     """
-    def commit_data(self, data, id_manager, meta_json=None):
+    def commit_data(self, data, endpoint, id_manager, obs_ref=None, meta_json=None):
 
-        endpoint = self.__settings["queries"][id_manager.get_query_name()]["endpoint"]
         # current_collection = self.__fsDB.collection(endpoint)
 
         # meta_endpoint = self.__settings["queries"][id_manager.get_query_name()]["meta_endpoint"]
@@ -382,7 +381,7 @@ class gb_pipe:
             # self.__transactions_pushed += 1
 
             # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry))
+            print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, obs_ref, meta_json))
 
             # current_document = current_collection.document(id_manager.issue_id(entry, meta_endpoint, meta_json))
             # current_document.set(entry)
@@ -427,12 +426,13 @@ class first_run_operator:
 
     __query_name = None
     __meta = None
-    __internal_cache = None
+    # __internal_cache = None
 
-    def __init__(self, query_name, meta=False, internal_cache=None):
+    # def __init__(self, query_name, meta=False, internal_cache=None):
+    def __init__(self, query_name, meta=False):
         self.__query_name = query_name
         self.__meta = meta
-        self.__internal_cache = internal_cache
+        # self.__internal_cache = internal_cache
         self.__initial_draw()
 
     def __initial_draw(self):
@@ -461,16 +461,19 @@ class first_run_operator:
             elif query["exclusion"] == None:
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
-                query_metadata = get_meta_for_query(self.__query_name)
-                print(query_metadata)
-                # If there is no metadata for the query, commit_data will error
+                query_metadata = None
+                obs_ref = None
+                if "meta_endpoint" in query:
+                    obs_ref = query["meta_endpoint"]
+                    query_metadata = get_meta_for_query(self.__query_name)
+                    print(query_metadata)
 
-                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, query_metadata)
+                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, obs_ref, query_metadata)
             else:
                 # Identity Insanity Inbound
-                print("!")
-                cache_string = self.__query_name.split('_')[1]
-                self.__internal_cache.get_setters()[cache_string](data)
+                # cache_string = self.__query_name.split('_')[1]
+                # self.__internal_cache.get_setters()[cache_string](data)
+                pass
 
         else:
             print("Unable to establish pipe manager. Check configuration and try again.")
@@ -491,8 +494,8 @@ class first_run_operator:
         else:
             print("Query json is not functional.")
 
-    def get_internal_cache(self):
-        return self.__internal_cache
+    # def get_internal_cache(self):
+    #     return self.__internal_cache
 
 
 """Update/append to the meta_cache entry for a given query
@@ -618,8 +621,6 @@ def main():
     SETTINGS_FILE_PATH = "settings.json"
     settings_manager = file_manager(SETTINGS_FILE_PATH)
 
-    INTERNAL_IDENTITY_CACHE = internal_identity_cache()
-
     # Create parser object, and add arguments
     parser = argparse.ArgumentParser(description='Creates a listener for the FireStore')
     parser.add_argument('-fl', '--flush', dest='flush_output', action='store_true', help='Flush the transaction id cache')
@@ -643,11 +644,13 @@ def main():
                     print("Starting First Run for Query:", query)
 
                     # handle special non-meta cases as necessary
-                    if settings_json["queries"][query]["exclusion"] == "identity":
-                        fr_operator = first_run_operator(query, INTERNAL_IDENTITY_CACHE)
-                        INTERNAL_IDENTITY_CACHE = fr_operator.get_internal_cache()
-                    else:
-                        fr_operator = first_run_operator(query)
+                    # if settings_json["queries"][query]["exclusion"] == "identity":
+                    #     fr_operator = first_run_operator(query, INTERNAL_IDENTITY_CACHE)
+                    #     INTERNAL_IDENTITY_CACHE = fr_operator.get_internal_cache()
+                    # else:
+                    #     fr_operator = first_run_operator(query)
+
+                    fr_operator = first_run_operator(query, settings_json["queries"][query]["meta"])
 
                     print("\nFirst Run Complete for Query:", query)
             print("\nCompleted First Run Procedures")
@@ -655,8 +658,8 @@ def main():
             print("Settings manager is not functional")
 
     # More Identity Insanity
-    gbpm = pipe_manager()
-    i_operator = identity_operator(INTERNAL_IDENTITY_CACHE, gbpm.get_pipe())
+    # gbpm = pipe_manager()
+    # i_operator = identity_operator(INTERNAL_IDENTITY_CACHE, gbpm.get_pipe())
 
     # print(get_meta_for_query("transactions")) # DEBUG
 

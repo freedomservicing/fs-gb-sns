@@ -1,8 +1,8 @@
 {
   "firestoreAddress": "fgcomplianceportal",
-  "organization": "00000",
-  "server": "000",
-  "machine_brand": "0",
+  "organization": "00001",
+  "server": "001",
+  "machine_brand": "1",
   "queries": {
     "terminal_information": {
       "meta": true,
@@ -31,21 +31,6 @@
       "relationships": {
         "id": "simple_id",
         "publicid": "publicid"
-      },
-      "first_run": true
-    },
-    "identity_pieces": {
-      "meta": true,
-      "meta_reference": null,
-      "exclusion": null,
-      "attributeTable": "identitypiece",
-      "attributes": [
-        "id",
-        "identity_id"
-      ],
-      "relationships": {
-        "id": "simple_id",
-        "identity_id": "assoc_identity"
       },
       "first_run": true
     },
@@ -163,7 +148,7 @@
       "attributeTable": "identitypiece",
       "attributes": [
         "id",
-        "createdat",
+        "created",
         "piecetype",
         "identity_id",
         "registration"
