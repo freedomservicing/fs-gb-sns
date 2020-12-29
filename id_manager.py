@@ -11,6 +11,36 @@
 
 from file_manager import file_manager
 
+class id:
+
+    __organization = None
+    __server = None
+    __brand = None
+    __machine = None
+    __transaction = None
+
+    __properties_json = None
+
+    __id_string = None
+
+    def __init__(self, properties_json=None):
+        self.__properties_json = properties_json
+        if self.__properties_json != None:
+            self.__build_id()
+
+    def __build_id(self):
+        self.__organization = self.__properties_json["organization"]
+        self.__server = self.__properties_json["server"]
+        self.__brand = self.__properties_json["brand"]
+        self.__machine = self.__properties_json["machine"]
+        self.__transaction = self.__properties_json["transaction"]
+        self.__id_string = self.__format_id()
+
+    def __format_id(self):
+        return self.__organization + "-" + self.__server + "-" + self.__brand + "-" + self.__machine + "-" + self.__transaction
+
+    def get_id_string(self):
+        return self.__id_string
 
 class id_manager:
 
@@ -18,85 +48,61 @@ class id_manager:
     'a','b','c','d','e','f','g','h','i','j','k','l','m','n',
     'o','p','q','r','s','t','u','v','w','x','y','z']
 
-    __query_id_cache_path = None
-    __query_id_cache_file = None
+    __transaction_id_cache_path = None
+    __transaction_id_cache_file = None
 
     __settings_path = None
     __settings_file = None
 
-    def __init__(self, query_name, id_cache_path="generic_id_cache.json", settings_path="settings.json"):
-        self.__query_name = query_name
-        self.__id_cache_path = id_cache_path
-        self.__id_cache_file = file_manager(self.__id_cache_path)
+    __functional = None
+
+    def __init__(self, transaction_id_cache_path, settings_path):
+        self.__transaction_id_cache_path = transaction_id_cache_path
+        self.__transaction_id_cache_file = file_manager(self.__transaction_id_cache_path)
         self.__settings_path = settings_path
         self.__settings_file = file_manager(self.__settings_path)
-        self.__id_string = ""
-        if self.__settings_file.is_functional():
-            is_meta = self.__settings_file.read_json()["queries"][query_name]["meta"]
-        if (not self.__id_cache_file.is_functional() or len(self.__id_cache_file.read_json().keys()) == 0) and not is_meta:
-            print("Initializing id cache for:", query_name)
-            self.__id_cache_file.write_json({query_name : {}})
-        self.__functional = self.__id_cache_file.is_functional() and self.__settings_file.is_functional()
+        if self.__transaction_id_cache_file.is_functional() and self.__settings_file.is_functional():
+            self.__functional = True
 
-
-    def get_query_name(self):
-        return self.__query_name
-
-    def get_truncated_id_string(self):
-        return self.__id_string
-
-    def get_full_id_string(self):
-        return self.get_standard_id_sections() + "-" + self.__id_string
-
-    def get_standard_id_sections(self):
-        settings_json = self.__settings_file.read_json()
-        organization = settings_json["organization"]
-        server = settings_json["server"]
-        machine_brand = settings_json["machine_brand"]
-        return organization + "-" + server + "-" + machine_brand
 
     # gb_terminal_json will need to be queried from the gbDB and populated
-    def issue_id(self, observation_json, observation_reference=None, meta_json=None):
-        cache_json = self.__id_cache_file.read_json()
+    def issue_id(self, observation_json, gb_terminal_json):
 
-        query_name = self.__query_name
-        obs_id = None
-        query_id = None
-        if meta_json is not None:
-            meta_id = observation_json[observation_reference]
-            gb_serial = meta_json[str(meta_id)]
+        organization = self.__settings_file.read_json()["organization"]
+        server = self.__settings_file.read_json()["server"]
+        machine_brand = self.__settings_file.read_json()["machine_brand"]
 
-            if gb_serial in cache_json[query_name]:
-                obs_id = cache_json[query_name][gb_serial][observation_reference]
-                query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}"])
-                cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
-            else:
-                # Adds new entry to the cache for each identified machine
-                # print(len(cache_json[query_name]))
-                if len(cache_json[query_name]) != 0:
-                    obs_id = self.__increment_id(cache_json[query_name][f"last_{observation_reference}"])
-                else:
-                    obs_id = "000000"
-                cache_json[query_name][f"last_{observation_reference}"] = obs_id
-                cache_json[query_name][gb_serial] = {}
-                # cache_json[query_name][gb_serial]["brand"] = machine_brand
-                cache_json[query_name][gb_serial][observation_reference] = cache_json[query_name][f"last_{observation_reference}"]
-                query_id = "000000"
-                cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
+        gb_id = observation_json["machine_id"]
+        gb_serial = gb_terminal_json[str(gb_id)]
 
-            self.__id_string = obs_id + "-" + query_id
+        cache_json = self.__transaction_id_cache_file.read_json()
+
+        machine_id = None
+        transaction_id = None
+
+        if gb_serial in cache_json["machines"]:
+            machine_id = cache_json["machines"][gb_serial]["machine_id"]
+            transaction_id = self.__increment_id(cache_json["machines"][gb_serial]["last_transaction_id"])
+            cache_json["machines"][gb_serial]["last_transaction_id"] = transaction_id
         else:
-            if query_name in cache_json.keys():
-                new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
+            # Adds new entry to the cache for each identified machine
+            if len(cache_json["machines"]) != 0:
+                machine_id = self.__increment_id(cache_json["last_machine_id"])
             else:
-                new_id = "000000"
-            self.__id_string = new_id
-            cache_json.update({query_name: {f"last_{query_name}": new_id}})
+                machine_id = cache_json["last_machine_id"]
+            cache_json["last_machine_id"] = machine_id
+            cache_json["machines"][gb_serial] = {}
+            cache_json["machines"][gb_serial]["brand"] = machine_brand
+            cache_json["machines"][gb_serial]["machine_id"] = cache_json["last_machine_id"]
+            transaction_id = "000000"
+            cache_json["machines"][gb_serial]["last_transaction_id"] = transaction_id
 
         # Update cache
-        self.__id_cache_file.write_json(cache_json)
-        return self.get_full_id_string()
+        self.__transaction_id_cache_file.write_json(cache_json)
 
+        nid = id({"organization": organization, "server": server, "brand": machine_brand, "machine": machine_id, "transaction": transaction_id})
+
+        return nid.get_id_string()
 
     def __increment_id(self, current_id):
 
@@ -105,15 +111,7 @@ class id_manager:
         id_length = len(current_id)
         characters_length = len(self.__characters)
 
-        is_at_max = True
-        for id_digit in current_id:
-            if id_digit is not self.__characters[-1]:
-                is_at_max = False
-
-        if is_at_max:
-            return "Overflow"
-
-        scanned_index = id_length - 1;
+        scanned_index = id_length - 1
 
         while scanned_index >= 0:
             current_character = current_id[scanned_index]
