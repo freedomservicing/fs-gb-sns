@@ -366,25 +366,15 @@ class gb_pipe:
 
 
     """Commit data to the FS
-
-    DO NOT INVOKE OR OTHERWISE CALL - THIS IS A PROTOTYPE / PSUEDOCODE FUNCTION
     """
-    def commit_data(self, data, endpoint, id_manager, obs_ref=None, meta_json=None):
+    def commit_data(self, entry, endpoint, id):
 
-        current_collection = self.__fsDB.collection(endpoint)
+        # current_collection = self.__fsDB.collection(endpoint)
 
-        for entry in data:
+        print("\nAdding:\n", entry, "\nUsing ID: ", id)
 
-            # Debug Check
-            # self.__transactions_pushed += 1
-
-            id = id_manager.issue_id(entry, obs_ref, meta_json)
-
-            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            print("\nAdding:\n", entry, "\nUsing ID: ", id)
-
-            current_document = current_collection.document(id)
-            current_document.set(entry)
+        # current_document = current_collection.document(id)
+        # current_document.set(entry)
 
 
 """Manages and encapsulates the GB pipe"""
@@ -468,7 +458,13 @@ class first_run_operator:
                     query_metadata = get_meta_for_query(self.__query_name)
                     print(query_metadata)
 
-                gb_pipe_manager.get_pipe().commit_data(data, endpoint, idm_instance, obs_ref, query_metadata)
+                for entry in data:
+
+                    id = idm_instance.issue_id(entry, obs_ref, query_metadata)
+                    gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
+
+            elif query["exclusion"] == "identity_head":
+                pass
             else:
                 # Identity Insanity Inbound
                 # cache_string = self.__query_name.split('_')[1]
