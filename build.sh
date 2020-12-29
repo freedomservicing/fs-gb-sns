@@ -26,9 +26,7 @@ then
     echo "----------------------------------------------------------"
     echo "Executing build now..."
     echo "----------------------------------------------------------"
-    pyinstaller --onefile sns.py
-    cp *.json dist/
-    chmod +x dist/sns.
+    debuild -k"B38C0477254E8B3D595DC3AD79C942F56CE04B00" -S 
 else
     echo "----------------------------------------------------------"
     echo "Qutting script now..."
