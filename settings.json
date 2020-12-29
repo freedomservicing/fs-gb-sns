@@ -103,7 +103,7 @@
     "identities": {
       "meta": false,
       "meta_reference": null,
-      "exclusion": "identity",
+      "exclusion": null,
       "attributeTable": "identity",
       "attributes": [
         "id",

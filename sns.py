@@ -149,51 +149,44 @@ class internal_identity_cache:
         return self.__identity_personal_cache
 
 
-"""Execute procedures concerning the merging and committing of identities
-"""
-class identity_operator:
-
-    def __init__(self, pipe, meta_cache_path="meta_cache.json"):
-
-        self.__meta_cache_path = meta_cache_path
-
-        self.__pipe = pipe
-
-        self.__execute_merge_protocol()
-
-    def __execute_merge_protocol(self):
-
-        identities_proper = self.__internal_cache.get_getters()["identities proper"]()
-
-        print(identities_proper)
-
-        identity_idm = id_manager("identities")
-
-        self.__pipe.commit_data(identities_proper, identity_idm)
-
-        # self.__associate_identity_uids(identities_proper, self.__meta_cache_path)
-
-
-    """Override meta for identities with our UID system
-
-    CHECK IF IDENTITY SERIALS NEED TO BE PRESERVED
-    """
-    def __associate_identity_uids(identity_observations, meta_cache_path):
-
-        identity_idm = id_manager("identities")
-
-        meta_cache_file = file_manager(meta_cache_path)
-        meta_cache_json = {}
-
-        # TODO: Correct procedure if fails to read
-        if meta_cache_file.is_functional():
-            meta_cache_json = meta_cache_file.read_json()
-
-        for identity in identity_observations:
-            current_identity = identity_observations[identity]
-            meta_cache_json[identity] = identity_idm.issue_id(current_identity)
-
-        meta_cache_file.write_json(meta_cache_json)
+# """Execute procedures concerning the merging and committing of identities
+# """
+# class identity_operator:
+#
+#     def __init__(self, pipe, meta_cache_path="meta_cache.json"):
+#
+#         self.__meta_cache_path = meta_cache_path
+#
+#         self.__pipe = pipe
+#
+#         self.__execute_merge_protocol()
+#
+#     def __execute_merge_protocol(self):
+#
+#         identities_proper = self.__internal_cache.get_getters()["identities proper"]()
+#
+#         identity_idm = id_manager("identities")
+#
+#     """Override meta for identities with our UID system
+#
+#     CHECK IF IDENTITY SERIALS NEED TO BE PRESERVED
+#     """
+#     def __associate_identity_uids(identity_observations, meta_cache_path):
+#
+#         identity_idm = id_manager("identities")
+#
+#         meta_cache_file = file_manager(meta_cache_path)
+#         meta_cache_json = {}
+#
+#         # TODO: Correct procedure if fails to read
+#         if meta_cache_file.is_functional():
+#             meta_cache_json = meta_cache_file.read_json()
+#
+#         for identity in identity_observations:
+#             current_identity = identity_observations[identity]
+#             meta_cache_json[identity] = identity_idm.issue_id(current_identity)
+#
+#         meta_cache_file.write_json(meta_cache_json)
 
 
 """Pipe connecting and facilitating the transfer of data between the GB mysql DB
