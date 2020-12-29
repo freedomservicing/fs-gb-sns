@@ -371,20 +371,20 @@ class gb_pipe:
     """
     def commit_data(self, data, endpoint, id_manager, obs_ref=None, meta_json=None):
 
-        # current_collection = self.__fsDB.collection(endpoint)
-
-        # meta_endpoint = self.__settings["queries"][id_manager.get_query_name()]["meta_endpoint"]
+        current_collection = self.__fsDB.collection(endpoint)
 
         for entry in data:
 
             # Debug Check
             # self.__transactions_pushed += 1
 
-            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
-            print("\nAdding:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, obs_ref, meta_json))
+            id = id_manager.issue_id(entry, obs_ref, meta_json)
 
-            # current_document = current_collection.document(id_manager.issue_id(entry, meta_endpoint, meta_json))
-            # current_document.set(entry)
+            # print("\nAdding Transaction:\n", entry, "\nUsing ID: ", id_manager.issue_id(entry, meta_json), "\nCounter: ", self.__transactions_pushed)
+            print("\nAdding:\n", entry, "\nUsing ID: ", id)
+
+            current_document = current_collection.document(id)
+            current_document.set(entry)
 
 
 """Manages and encapsulates the GB pipe"""
@@ -557,15 +557,12 @@ class listener_operator:
     __settings_path = None
     __settings_file = None
 
-    __query_json = None
     __meta_json = None
 
-    def __init__(self, settings_path, query_json, meta_json=None):
+    def __init__(self, settings_path, meta_json=None):
 
         self.__settings_path = settings_path
         self.__settings_file = file_manager(self.__settings_path)
-
-        self.__query_json = query_json
 
         # TODO: Enforce Modularity
         self.__meta_json = meta_json
@@ -596,7 +593,7 @@ class listener_operator:
                 listener_managers.append(listener_manager(listener(connector, query_json, query, idm_instance, meta_dict)))
 
 
-def flush_transaction_id_cache(path_to_cache="generic_id_cache.json", path_to_template="transaction_id_cache.json.TEMPLATE"):
+def flush_cache(path_to_cache="generic_id_cache.json"):
     print('Flushing id cache')
     successful_flush = True
     try:
@@ -629,7 +626,7 @@ def main():
     # Handle execution of arguments
     args = parser.parse_args()
     if args.flush_output:
-        flush_transaction_id_cache()
+        flush_cache()
 
     if args.first_run is not None:
         if settings_manager.is_functional():
@@ -637,7 +634,7 @@ def main():
             is_all = 'all' in args.first_run
             # TODO: Better arg handling - rm 'transactions'
             if 'all' in args.first_run or 'transactions' in args.first_run:
-                flush_transaction_id_cache()
+                flush_cache()
             for query in settings_json["queries"]:
                 print(query)
                 if (is_all or query in args.first_run):
@@ -671,7 +668,7 @@ def main():
     #         if not query_json["meta"] and query_json["exclusion"] == None:
     #             meta_data = get_meta_for_query(query)
     #             # print("Not meta")
-    #             l_operator = listener_operator(SETTINGS_FILE_PATH, query_json, meta_data)
+    #             l_operator = listener_operator(SETTINGS_FILE_PATH, meta_data)
 
 
 # Main execution
