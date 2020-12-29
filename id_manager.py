@@ -161,14 +161,14 @@ class id_manager:
 
 
     def update_cache_file_via_path(self, path_to_data, path_to_cache="generic_id_cache.json"):
-        cache_manager = file_manager(path_to_cache)
+        cache_manager = self.__id_cache_file
         cache_contents = cache_manager.read_json() if cache_manager.is_functional() else {}
         cache_contents = self.update_dictionary_via_string(path_to_data, cache_contents)
         cache_manager.write_json(cache_contents)
 
 
     def get_data_from_cache_via_path(self, path_to_data, path_to_cache="generic_id_cache.json"):
-        cache_manager = file_manager(path_to_cache)
+        cache_manager = self.__id_cache_file
         if cache_manager.is_functional():
             return self.get_dictionary_content_via_path(path_to_data, cache_manager.read_json())
         else:
