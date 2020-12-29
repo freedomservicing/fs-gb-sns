@@ -88,7 +88,7 @@
     "identities": {
       "meta": false,
       "meta_reference": null,
-      "exclusion": "identity_head",
+      "exclusion": null,
       "attributeTable": "identity",
       "attributes": [
         "id",
