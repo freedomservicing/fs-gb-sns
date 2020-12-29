@@ -127,3 +127,34 @@ class id_manager:
                 scanned_index -= 1
 
         return "".join(current_id)
+
+    def update_dictionary_via_string(self, path, json_dict):
+        path_list = path.split("-")
+        if len(path_list) < 2:
+            print("Entered path for dictionary was empty")
+            return {}
+        elif len(path_list) == 2:
+            json_dict.update({path_list[0] : path_list[1]})
+        else:
+            current_key = path_list[0]
+            if current_key not in json_dict.keys():
+                json_dict.update({current_key : {}})
+            json_dict.update({current_key : self.update_dictionary_via_string('-'.join(path_list[1:]), json_dict[current_key])})
+        return json_dict
+
+
+    def get_dictionary_content_via_path(self, path, json_dict):
+        path_list = path.split("-")
+        if len(path_list) < 1:
+            print("Entered path for dictionary was empty")
+            return None
+
+        current_key = path_list[0]
+        if current_key in json_dict.keys():
+            if len(path_list) == 1:
+                return json_dict[current_key]
+            else:
+                return self.get_dictionary_content_via_path('-'.join(path_list[1:]), json_dict[current_key])
+        else:
+            print(f"Key: \"{current_key}\" not found, returning closest dictionary found")
+            return json_dict
