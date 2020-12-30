@@ -9,14 +9,24 @@ echo "----------------------------------------------------------"
 echo "Please insure that you have installed pyinstaller via the pip command line tool before proceeding"
 echo "----------------------------------------------------------"
 
-read -r -p "Would you like to automatically install all dependencies including pyinstaller needed? (Y/N)" depsYN
-if [[ "$depsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
+read -r -p "Would you like to automagically install all python deps? (Y/N)" pyDepsYN
+if [[ "$pyDepsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     echo "----------------------------------------------------------"
     pip3 install firebase_admin python_jwt gcloud sseclient pycrypto requests-toolbelt pyinstaller
     echo "----------------------------------------------------------"
 else
     # N/A
+    echo "----------------------------------------------------------"
+fi
+
+read -r -p "Would you like to automagically install all other build deps (apt install) (Y/N)?" ubuntuDepsYN
+if [[ "$ubuntuDepsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
+then
+    echo "----------------------------------------------------------"
+    sudo apt install build-essential fakeroot devscripts
+    echo "----------------------------------------------------------"
+else
     echo "----------------------------------------------------------"
 fi
 
@@ -27,6 +37,7 @@ then
     echo "Executing build now..."
     echo "----------------------------------------------------------"
     debuild -k"B38C0477254E8B3D595DC3AD79C942F56CE04B00" -S 
+    echo "----------------------------------------------------------"
 else
     echo "----------------------------------------------------------"
 fi
