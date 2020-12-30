@@ -53,7 +53,7 @@ then
     echo "Executing push now..."
     echo "----------------------------------------------------------"
     cd ..
-    dput ppa:freedomservicing/fs-gb-sns *.changes
+    dput -f ppa:freedomservicing/fs-gb-sns *.changes
 fi
 
 echo "----------------------------------------------------------"
