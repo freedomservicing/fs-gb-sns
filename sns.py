@@ -22,6 +22,15 @@ from listener import listener, listener_manager
 import os
 import json
 
+piece_type_ref = {
+"1": "emails",
+"2": "docs",
+"3": "personals",
+"4": "cellphones",
+# Fingerprints are currently not populated on the GB backend
+"5": "fingerprints",
+"6": "camera_images"
+}
 
 class identity_piece:
 
@@ -370,8 +379,9 @@ class gb_pipe:
     def commit_data(self, entry, endpoint, id):
 
         # current_collection = self.__fsDB.collection(endpoint)
-        pass
+
         # print("\nAdding:\n", entry, "\nUsing ID: ", id)
+        pass
 
         # current_document = current_collection.document(id)
         # current_document.set(entry)
@@ -435,9 +445,6 @@ class first_run_operator:
 
         gb_pipe_manager = pipe_manager(CREDENTIALS_FILE_PATH, SETTINGS_FILE_PATH)
 
-        cache_file = file_manager(ID_CACHE_PATH)
-
-
         settings_manager = file_manager(SETTINGS_FILE_PATH)
         settings_json = settings_manager.read_json()
 
@@ -484,18 +491,68 @@ class first_run_operator:
                     gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
 
                     # Add the gb id for every identity
-                    # gb_simple_id = entry[query["relationships"]["id"]]
+                    gb_simple_id = entry[query["relationships"]["id"]]
 
-                    # cache_json = cache_file.read_json()
-                    # cache_json[self.__query_name][gb_simple_id]
-                    # cache_file.write_json(cache_json)
+                    cache_file = idm_instance.get_id_cache_file()
+                    cache_json = cache_file.read_json()
+                    cache_json[self.__query_name].update({gb_simple_id : {}})
+                    cache_file.write_json(cache_json)
 
-                    # idm_instance.update_cache_file_via_path(self.__query_name + "-" + gb_simple_id)
+                    idm_instance.update_cache_file_via_path(self.__query_name + '*' + gb_simple_id + '*' + id, '*')
+
+            elif query["exclusion"] == "identity pieces":
+
+                specific_idms = {}
+
+                for i in range(1, 6):
+                    specific_idms.update({f"{i}" : id_manager("identity_" + piece_type_ref[f"{i}"], ID_CACHE_PATH, SETTINGS_FILE_PATH)})
+
+                idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
+                self.__initialize_listener_cache(data[-1])
+                query_metadata = None
+                obs_ref = None
+                if query["meta_endpoint"] != None:
+                    obs_ref = query["meta_endpoint"]
+                    query_metadata = get_meta_for_query(self.__query_name)
+                    print(query_metadata)
+
+                cache_file = idm_instance.get_id_cache_file()
+                cache_json = cache_file.read_json()
+
+                base_endpoint = query["endpoint"]
+
+                for entry in data:
+
+                    id = idm_instance.issue_id(entry, obs_ref, query_metadata)
+
+                    piece_id = entry[query["relationships"]["id"]]
+                    parent_identity_id = entry[query["relationships"]["identity_id"]]
+                    parent_identity_uid = cache_json["identities"][parent_identity_id]
+
+                    # Check if the following returns a string or int
+                    piece_type = entry[query["relationships"]["piecetype"]]
+
+                    subquery_name = "identity_" + piece_type_ref[piece_type]
+
+                    subquery = gb_pipe_manager.get_pipe().get_query(subquery_name)
+                    subquery += " WHERE identityPiece_id=" + piece_id
+
+                    # print("SQ:" + subquery)
+
+                    current_pieces = gb_pipe_manager.get_pipe().restructure_query_response(subquery_name, gb_pipe_manager.get_pipe().submit_query(subquery))
+                    sanitized_pieces = gb_pipe_manager.get_pipe().prepare_fs_submission(current_pieces, subquery_name)
+
+                    for piece in sanitized_pieces:
+
+                        inner_cache = "identities" + "*" + parent_identity_id + "*" + subquery_name + "*" + "last_" + subquery_name
+
+                        print("IC:" + inner_cache)
+
+                        id = specific_idms[piece_type].issue_id(entry, obs_ref, query_metadata, level_path=inner_cache)
+                        # Map for subquery_name - Make more readable on FS
+                        gb_pipe_manager.get_pipe().commit_data(entry, base_endpoint + parent_identity_uid + subquery_name, id)
 
             else:
-                # Identity Insanity Inbound
-                # cache_string = self.__query_name.split('_')[1]
-                # self.__internal_cache.get_setters()[cache_string](data)
                 pass
 
         else:

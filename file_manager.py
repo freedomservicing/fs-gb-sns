@@ -11,15 +11,13 @@ import json
 
 class file_manager:
 
-    __file_path = None
-    __functional = True
-
-
     """Constructor
     :param file_path: absolute or relative file path
     """
-    def __init__(self, file_path):
+    def __init__(self, file_path, fm_id = "Default"):
         self.__file_path = file_path
+        self.__fm_id = fm_id
+        self.__functional = True
         # self.read_json()
         try:
             self.read_json()
@@ -34,6 +32,8 @@ class file_manager:
     def read_json(self):
         with open(self.__file_path) as f:
             file = json.load(f)
+        # if self.__fm_id != "Default":
+        #     print("\nIn FM:", self.__fm_id, "\nFile Contents:", file)
         return file
 
 

@@ -120,6 +120,29 @@
       "endpoint": "Identities",
       "first_run": true
     },
+    "identity_pieces": {
+      "meta": false,
+      "meta_reference": null,
+      "meta_endpoint": null,
+      "exclusion": "identity pieces",
+      "attributeTable": "identitypiece",
+      "attributes": [
+        "id",
+        "created",
+        "piecetype",
+        "identity_id",
+        "registration"
+      ],
+      "listener_column": "id",
+      "listener_interval": 60,
+      "relationships": {
+        "id": "gb_identity_piece_id",
+        "identity_id": "parent_identity_id",
+        "piecetype": "piecetype"
+      },
+      "endpoint": "Identity Pieces",
+      "first_run": true
+    },
     "identity_notes": {
       "meta": false,
       "meta_reference": null,
@@ -140,26 +163,6 @@
         "id": "gb_identity_note_id"
       },
       "endpoint": "Identity Notes",
-      "first_run": true
-    },
-    "identity_pieces": {
-      "meta": false,
-      "meta_reference": null,
-      "exclusion": "identity",
-      "attributeTable": "identitypiece",
-      "attributes": [
-        "id",
-        "created",
-        "piecetype",
-        "identity_id",
-        "registration"
-      ],
-      "listener_column": "id",
-      "listener_interval": 60,
-      "relationships": {
-        "id": "gb_identity_piece_id"
-      },
-      "endpoint": "Identity Pieces",
       "first_run": true
     },
     "identity_camera_images": {
@@ -185,7 +188,7 @@
       "endpoint": "Identity Camera Images",
       "first_run": true
     },
-    "identity_cells": {
+    "identity_cellphones": {
       "meta": false,
       "meta_reference": null,
       "exclusion": "identity",
@@ -267,7 +270,7 @@
       "endpoint": "Identity Fingerprints",
       "first_run": true
     },
-    "identity_personal": {
+    "identity_personals": {
       "meta": false,
       "meta_reference": null,
       "exclusion": "identity",

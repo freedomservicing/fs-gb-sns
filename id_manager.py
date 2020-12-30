@@ -18,16 +18,13 @@ class id_manager:
     'a','b','c','d','e','f','g','h','i','j','k','l','m','n',
     'o','p','q','r','s','t','u','v','w','x','y','z']
 
-    __query_id_cache_path = None
-    __query_id_cache_file = None
-
     __settings_path = None
     __settings_file = None
 
     def __init__(self, query_name, id_cache_path="generic_id_cache.json", settings_path="settings.json"):
         self.__query_name = query_name
         self.__id_cache_path = id_cache_path
-        self.__id_cache_file = file_manager(self.__id_cache_path)
+        self.__id_cache_file = file_manager(self.__id_cache_path, "idm")
         self.__settings_path = settings_path
         self.__settings_file = file_manager(self.__settings_path)
         self.__id_string = ""
@@ -44,6 +41,9 @@ class id_manager:
             cache_contents.update({query_name : {}})
             self.__id_cache_file.write_json(cache_contents)
         self.__functional = self.__id_cache_file.is_functional() and self.__settings_file.is_functional()
+
+    def get_id_cache_file(self):
+        return self.__id_cache_file
 
     def get_query_name(self):
         return self.__query_name
@@ -62,45 +62,53 @@ class id_manager:
         return organization + "-" + server + "-" + machine_brand
 
     # gb_terminal_json will need to be queried from the gbDB and populated
-    def issue_id(self, observation_json, observation_reference=None, meta_json=None):
+    def issue_id(self, observation_json, observation_reference=None, meta_json=None, level_path=None, delim="*"):
         cache_json = self.__id_cache_file.read_json()
 
         query_name = self.__query_name
         obs_id = None
         query_id = None
-        if meta_json is not None:
-            meta_id = observation_json[observation_reference]
-            gb_serial = meta_json[str(meta_id)]
+        if level_path is None:
+            if meta_json is not None:
+                meta_id = observation_json[observation_reference]
+                gb_serial = meta_json[str(meta_id)]
 
-            if gb_serial in cache_json[query_name]:
-                obs_id = cache_json[query_name][gb_serial][observation_reference]
-                query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}"])
-                cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
-            else:
-                # Adds new entry to the cache for each identified machine
-                # print(len(cache_json[query_name]))
-                if len(cache_json[query_name]) != 0:
-                    obs_id = self.__increment_id(cache_json[query_name][f"last_{observation_reference}"])
+                if gb_serial in cache_json[query_name]:
+                    obs_id = cache_json[query_name][gb_serial][observation_reference]
+                    query_id = self.__increment_id(cache_json[query_name][gb_serial][f"last_{query_name}"])
+                    cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
                 else:
-                    obs_id = "000001"
-                cache_json[query_name][f"last_{observation_reference}"] = obs_id
-                cache_json[query_name][gb_serial] = {}
-                # cache_json[query_name][gb_serial]["brand"] = machine_brand
-                cache_json[query_name][gb_serial][observation_reference] = cache_json[query_name][f"last_{observation_reference}"]
-                query_id = "000001"
-                cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
+                    # Adds new entry to the cache for each identified machine
+                    # print(len(cache_json[query_name]))
+                    if len(cache_json[query_name]) != 0:
+                        obs_id = self.__increment_id(cache_json[query_name][f"last_{observation_reference}"])
+                    else:
+                        obs_id = "000001"
+                    cache_json[query_name][f"last_{observation_reference}"] = obs_id
+                    cache_json[query_name][gb_serial] = {}
+                    # cache_json[query_name][gb_serial]["brand"] = machine_brand
+                    cache_json[query_name][gb_serial][observation_reference] = cache_json[query_name][f"last_{observation_reference}"]
+                    query_id = "000001"
+                    cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
 
-            self.__id_string = obs_id + "-" + query_id
-        else:
-            if query_name in cache_json.keys() and f"last_{query_name}" in cache_json[query_name].keys():
-                new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
+                self.__id_string = obs_id + "-" + query_id
             else:
-                new_id = "000001"
-            self.__id_string = new_id
-            cache_json.update({query_name: {f"last_{query_name}": new_id}})
+                if query_name in cache_json.keys() and f"last_{query_name}" in cache_json[query_name].keys():
+                    new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
+                else:
+                    new_id = "000001"
+                self.__id_string = new_id
 
-        # Update cache
-        self.__id_cache_file.write_json(cache_json)
+                if query_name in cache_json:
+                    cache_json[query_name].update({f"last_{query_name}": new_id})
+                else:
+                    cache_json[query_name] = {f"last_{query_name}": new_id}
+            self.__id_cache_file.write_json(cache_json)
+        else: # level_path is not None
+            current_id = self.get_dictionary_content_via_path(level_path, cache_json, delim=delim)
+            if not isinstance(current_id, dict):
+                inc_id = self.__increment_id(current_id)
+            self.update_cache_file_via_path(level_path, delim=delim)
         return self.get_full_id_string()
 
 
@@ -134,8 +142,8 @@ class id_manager:
 
         return "".join(current_id)
 
-    def update_dictionary_via_string(self, path, json_dict):
-        path_list = path.split("-")
+    def update_dictionary_via_string(self, path, json_dict, delim="-"):
+        path_list = path.split(delim)
         if len(path_list) < 2:
             print("Entered path for dictionary was empty")
             return {}
@@ -145,12 +153,12 @@ class id_manager:
             current_key = path_list[0]
             if current_key not in json_dict.keys():
                 json_dict.update({current_key : {}})
-            json_dict.update({current_key : self.update_dictionary_via_string('-'.join(path_list[1:]), json_dict[current_key])})
+            json_dict.update({current_key : self.update_dictionary_via_string(delim.join(path_list[1:]), json_dict[current_key], delim)})
         return json_dict
 
 
-    def get_dictionary_content_via_path(self, path, json_dict):
-        path_list = path.split("-")
+    def get_dictionary_content_via_path(self, path, json_dict, delim="-"):
+        path_list = path.split(delim)
         if len(path_list) < 1:
             print("Entered path for dictionary was empty")
             return None
@@ -160,23 +168,23 @@ class id_manager:
             if len(path_list) == 1:
                 return json_dict[current_key]
             else:
-                return self.get_dictionary_content_via_path('-'.join(path_list[1:]), json_dict[current_key])
+                return self.get_dictionary_content_via_path(delim.join(path_list[1:]), json_dict[current_key], delim)
         else:
             print(f"Key: \"{current_key}\" not found, returning closest dictionary found")
             return json_dict
 
 
-    def update_cache_file_via_path(self, path_to_data, path_to_cache="generic_id_cache.json"):
+    def update_cache_file_via_path(self, path_to_data, delim="-", path_to_cache="generic_id_cache.json"):
         cache_manager = self.__id_cache_file
         cache_contents = cache_manager.read_json() if cache_manager.is_functional() else {}
-        cache_contents = self.update_dictionary_via_string(path_to_data, cache_contents)
+        cache_contents = self.update_dictionary_via_string(path_to_data, cache_contents, delim)
         cache_manager.write_json(cache_contents)
 
 
-    def get_data_from_cache_via_path(self, path_to_data, path_to_cache="generic_id_cache.json"):
+    def get_data_from_cache_via_path(self, path_to_data, delim="-", path_to_cache="generic_id_cache.json"):
         cache_manager = self.__id_cache_file
         if cache_manager.is_functional():
-            return self.get_dictionary_content_via_path(path_to_data, cache_manager.read_json())
+            return self.get_dictionary_content_via_path(path_to_data, cache_manager.read_json(), delim)
         else:
             print(f"Cache at \"{path_to_cache}\" does not exist.")
             return None
