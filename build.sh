@@ -9,6 +9,10 @@ echo "----------------------------------------------------------"
 echo "Please insure that you have installed pyinstaller via the pip command line tool before proceeding"
 echo "----------------------------------------------------------"
 
+echo "Deleting previous build metadata"
+echo "----------------------------------------------------------"
+rm -rf ../fs-gb-sns_*
+
 read -r -p "Would you like to automagically install all python deps? (Y/N)" pyDepsYN
 if [[ "$pyDepsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
@@ -36,7 +40,7 @@ then
     echo "----------------------------------------------------------"
     echo "Executing build now..."
     echo "----------------------------------------------------------"
-    debuild -k"B38C0477254E8B3D595DC3AD79C942F56CE04B00" -S 
+    debuild -k"B38C0477254E8B3D595DC3AD79C942F56CE04B00" -S
     echo "----------------------------------------------------------"
 else
     echo "----------------------------------------------------------"
@@ -49,7 +53,6 @@ then
     echo "Executing push now..."
     echo "----------------------------------------------------------"
     cd ..
-    rm -rf *.changes
     dput ppa:freedomservicing/fs-gb-sns *.changes
 fi
 
