@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'fs-gb-sns',
-    version = '0.0.1',
+    version = '0.0.2',
     description = 'Freedom Servicing GB Listener',
     url = 'https://github.com/freedomservicing/gb_sns',
     author = 'Freedom Servicing, LLC',
