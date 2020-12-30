@@ -29,9 +29,19 @@ then
     debuild -k"B38C0477254E8B3D595DC3AD79C942F56CE04B00" -S 
 else
     echo "----------------------------------------------------------"
-    echo "Qutting script now..."
-    echo "----------------------------------------------------------"
-    exit 1
 fi
 
+read -r -p "Would you like to push to Launchpad (Y/N)?" pushYN
+if [[ "$pushYN" =~ ^([yY][eE][sS]|[yY])$ ]]
+then
+    echo "----------------------------------------------------------"
+    echo "Executing push now..."
+    echo "----------------------------------------------------------"
+    cd ..
+    dput ppa:freedomservicing/fs-gb-sns *.changes
+fi
+
+echo "----------------------------------------------------------"
+echo "Qutting script now..."
+echo "----------------------------------------------------------"
 exit 1
