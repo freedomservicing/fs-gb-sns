@@ -13,7 +13,7 @@ read -r -p "Would you like to automatically install all dependencies including p
 if [[ "$depsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     echo "----------------------------------------------------------"
-    pip install firebase_admin python_jwt gcloud sseclient pycrypto requests-toolbelt pyinstaller
+    pip3 install firebase_admin python_jwt gcloud sseclient pycrypto requests-toolbelt pyinstaller
     echo "----------------------------------------------------------"
 else
     # N/A
