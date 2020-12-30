@@ -105,10 +105,10 @@ class id_manager:
                     cache_json[query_name] = {f"last_{query_name}": new_id}
             self.__id_cache_file.write_json(cache_json)
         else: # level_path is not None
-            current_id = self.get_dictionary_content_via_path(level_path, cache_json, delim=delim)
-            if not isinstance(current_id, dict):
-                inc_id = self.__increment_id(current_id)
-            self.update_cache_file_via_path(level_path, delim=delim)
+            current_id = self.get_data_from_cache_via_path(level_path, delim=delim)
+            inc_id = "000001" if not isinstance(current_id, str) else self.__increment_id(current_id)
+            self.update_cache_file_via_path(f"{delim}".join([level_path,inc_id]), delim=delim)
+            return inc_id
         return self.get_full_id_string()
 
 
@@ -151,6 +151,8 @@ class id_manager:
             json_dict.update({path_list[0] : path_list[1]})
         else:
             current_key = path_list[0]
+            if isinstance(json_dict, str):
+                 return json_dict
             if current_key not in json_dict.keys():
                 json_dict.update({current_key : {}})
             json_dict.update({current_key : self.update_dictionary_via_string(delim.join(path_list[1:]), json_dict[current_key], delim)})
@@ -164,6 +166,10 @@ class id_manager:
             return None
 
         current_key = path_list[0]
+        # print(path_list)
+        # print(f"Json_dictionary for key: \"{current_key}\":", json_dict, f"\n{len(path_list)}")
+        # if isinstance(json_dict, str):
+        #     return json_dict
         if current_key in json_dict.keys():
             if len(path_list) == 1:
                 return json_dict[current_key]

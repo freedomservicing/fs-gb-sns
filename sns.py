@@ -498,7 +498,7 @@ class first_run_operator:
                     cache_json[self.__query_name].update({gb_simple_id : {}})
                     cache_file.write_json(cache_json)
 
-                    idm_instance.update_cache_file_via_path(self.__query_name + '*' + gb_simple_id + '*' + id, '*')
+                    idm_instance.update_cache_file_via_path(self.__query_name + '*' + gb_simple_id + '*' + "UID" + '*' +id, '*')
 
             elif query["exclusion"] == "identity pieces":
 
@@ -527,7 +527,7 @@ class first_run_operator:
 
                     piece_id = entry[query["relationships"]["id"]]
                     parent_identity_id = entry[query["relationships"]["identity_id"]]
-                    parent_identity_uid = cache_json["identities"][parent_identity_id]
+                    parent_identity_uid = cache_json["identities"][parent_identity_id]["UID"]
 
                     # Check if the following returns a string or int
                     piece_type = entry[query["relationships"]["piecetype"]]
