@@ -504,7 +504,7 @@ class first_run_operator:
 
                 specific_idms = {}
 
-                for i in range(1, 6):
+                for i in range(1, 7):
                     specific_idms.update({f"{i}" : id_manager("identity_" + piece_type_ref[f"{i}"], ID_CACHE_PATH, SETTINGS_FILE_PATH)})
 
                 idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
