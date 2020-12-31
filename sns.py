@@ -390,13 +390,13 @@ class gb_pipe:
     """
     def commit_general_data(self, entry, endpoint, id):
 
-        # current_collection = self.__fsDB.collection(endpoint)
+        current_collection = self.__fsDB.collection(endpoint)
 
-        print("\nAdding:\n", entry, "\nUsing ID: ", id)
+        # print("\nAdding:\n", entry, "\nUsing ID: ", id)
         # pass
 
-        # current_document = current_collection.document(id)
-        # current_document.set(entry)
+        current_document = current_collection.document(id)
+        current_document.set(entry)
 
 
 """Manages and encapsulates the GB pipe"""
@@ -565,16 +565,16 @@ class first_run_operator:
 
                         current_collection = gb_pipe_manager.get_pipe().get_fsDB().collection("Identities")
 
-                        # identity_document = current_collection.document(parent_identity_uid)
-                        # piece_subcollection = identity_document.collection(subcollection_ref[piece_type_ref[piece_type]])
-                        # piece_document = piece_subcollection.document(id_proper)
-                        # piece_document.set(piece)
+                        identity_document = current_collection.document(parent_identity_uid)
+                        piece_subcollection = identity_document.collection(subcollection_ref[piece_type_ref[piece_type]])
+                        piece_document = piece_subcollection.document(id_proper)
+                        piece_document.set(piece)
 
-                        if piece_type == "2" or piece_type == "6":
-                            full_id = parent_identity_uid + "-" + id_proper
-                            gb_filename = piece[settings_json["queries"][subquery_name]["relationships"]["filename"]].split(".")
-                            gb_filename[1] = "." + gb_filename[1]
-                            print("\nPID:", full_id, "FILE:", gb_filename)
+                        # if piece_type == "2" or piece_type == "6":
+                        #     full_id = parent_identity_uid + "-" + id_proper
+                        #     gb_filename = piece[settings_json["queries"][subquery_name]["relationships"]["filename"]].split(".")
+                        #     gb_filename[1] = "." + gb_filename[1]
+                        #     print("\nPID:", full_id, "FILE:", gb_filename)
                             # pictue = PictureHelper(full_id, gb_filename[0], extension=gb_filename[1])
 
             else:
