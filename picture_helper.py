@@ -16,7 +16,7 @@ class PictureHelper:
         self.__firebase_filename = firebase_filename
         self.__gb_filename = gb_filename
         self.__file_type = firebase_filename[20]
-        self.__handle_pictures();
+        # self.__handle_pictures();
         # https://firebase.google.com/docs/reference/admin/python/firebase_admin.storage
         # https://cloud.google.com/storage/docs/getting-bucket-information
         # https://console.cloud.google.com/storage/browser?authuser=1&project=fgcomplianceportal&prefix=
