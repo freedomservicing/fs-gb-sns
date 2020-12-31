@@ -21,6 +21,7 @@ from file_manager import file_manager
 from listener import listener, listener_manager
 import os
 import json
+from picture_helper import PictureHelper
 
 piece_type_ref = {
 "1": "emails",
@@ -570,12 +571,12 @@ class first_run_operator:
                         piece_document = piece_subcollection.document(id_proper)
                         piece_document.set(piece)
 
-                        # if piece_type == "2" or piece_type == "6":
-                        #     full_id = parent_identity_uid + "-" + id_proper
-                        #     gb_filename = piece[settings_json["queries"][subquery_name]["relationships"]["filename"]].split(".")
-                        #     gb_filename[1] = "." + gb_filename[1]
-                        #     print("\nPID:", full_id, "FILE:", gb_filename)
-                            # pictue = PictureHelper(full_id, gb_filename[0], extension=gb_filename[1])
+                        if piece_type == "2" or piece_type == "6":
+                             full_id = parent_identity_uid + "-" + id_proper
+                             gb_filename = piece[settings_json["queries"][subquery_name]["relationships"]["filename"]].split(".")
+                             gb_filename[1] = "." + gb_filename[1]
+                             print("\nPID:", full_id, "FILE:", gb_filename)
+                             pictue = PictureHelper(full_id, gb_filename[0], extension=gb_filename[1])
 
             else:
                 pass

@@ -55,7 +55,7 @@ class PictureHelper:
         self.__handle_picture()
 
 
-    def __handle_picture(self):
+    def __handle_pictures(self):
         # https://stackoverflow.com/questions/52883534/firebase-storage-upload-file-python
 
         blob = self.__storage.blob(self.__firebase_filename)
