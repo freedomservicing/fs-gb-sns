@@ -18,6 +18,7 @@ if [[ "$pyDepsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     echo "----------------------------------------------------------"
     pip3 install firebase_admin python_jwt gcloud sseclient pycrypto requests-toolbelt pyinstaller
+    pip3 list -o | cut -f1 -d' ' | tr " " "\n" | awk '{if(NR>=3)print)' | cut -d' ' -f1 | xargs -n1 pip3 install -U 
     echo "----------------------------------------------------------"
 else
     # N/A
