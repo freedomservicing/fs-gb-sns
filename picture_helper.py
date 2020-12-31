@@ -9,10 +9,10 @@ from firebase_admin import firestore, storage
 
 class PictureHelper:
 
-    # Ex Basic Usage: new PictureHelper("XXXXX-XXX-X-XXXXXXX-X-X", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO.jpg")
+    # Ex Basic Usage: new PictureHelper("XXXXX-XXX-X-XXXXXXX-X-X", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO")
     # Ex Adv. Usage: new PictureHelper("XXXXX-XXX-X-XXXXXXX-X-X", "DICPHCPMSMXOVEDK7_FRMTVBVD8ZSDRKKO.jpg", storage.bucket("your_link").ref.child("folder/file"), ".png")
     def __init__(self, firebase_filename, gb_filename, firebase_folder_ref = None, gb_filepath = None, extension = None):
-        
+
         self.__firebase_filename = firebase_filename
         self.__gb_filename = gb_filename
         self.__file_type = firebase_filename[20]
@@ -25,9 +25,9 @@ class PictureHelper:
         # https://firebase.google.com/docs/storage/web/create-reference#create_a_reference
         self.__storage_ref = self.__storage.ref()
         self.__firebase_folder_ref = None
-        
+
         # Handle optional overrides
-        
+
             # TODO: Add an error here if it is None but self.__file_type isn't 2 or 6
         if gb_filepath is None:
             if self.__file_type == '2':
@@ -54,7 +54,7 @@ class PictureHelper:
 
         self.__handle_picture()
 
-    
+
     def __handle_picture(self):
         # https://stackoverflow.com/questions/52883534/firebase-storage-upload-file-python
 
@@ -66,7 +66,5 @@ class PictureHelper:
             print("     self.__firebase_folder_ref: " + self.__firebase_folder_ref)
             print("     self.__firebase_filename: " + self.__firebase_filename)
             print("     self.__")
-            
-            # blob.upload_from_file(file_obj, self.__firebase_folder_ref)
 
-        
+            # blob.upload_from_file(file_obj, self.__firebase_folder_ref)

@@ -183,7 +183,8 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_camera_image_id"
+        "id": "gb_identity_camera_image_id",
+        "filename": "filename"
       },
       "endpoint": "Identity Camera Images",
       "first_run": true
@@ -226,7 +227,8 @@
       "listener_column": "id",
       "listener_interval": 60,
       "relationships": {
-        "id": "gb_identity_doc_id"
+        "id": "gb_identity_doc_id",
+        "filename": "filename"
       },
       "endpoint": "Identity Docs",
       "first_run": true

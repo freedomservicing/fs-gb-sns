@@ -32,6 +32,16 @@ piece_type_ref = {
 "6": "camera_images"
 }
 
+subcollection_ref = {
+"emails" : "Emails",
+"docs" : "Documents",
+"personals" : "Personal Information",
+"cellphones" : "Cellphones",
+# Fingerprints are currently not populated on the GB backend
+"fingerprints" : "Fingerprints",
+"camera_images" : "Camera Images"
+}
+
 class identity_piece:
 
     def __init__(self, piece_obs, settings_json):
@@ -257,6 +267,8 @@ class gb_pipe:
         except:
             self.__functional == False
 
+    def get_fsDB(self):
+        return self.__fsDB
 
     """Compile a query based upon predefined attributes and a target table
     :see: settings.json/attributeTable
@@ -376,12 +388,12 @@ class gb_pipe:
 
     """Commit data to the FS
     """
-    def commit_data(self, entry, endpoint, id):
+    def commit_general_data(self, entry, endpoint, id):
 
         # current_collection = self.__fsDB.collection(endpoint)
 
-        # print("\nAdding:\n", entry, "\nUsing ID: ", id)
-        pass
+        print("\nAdding:\n", entry, "\nUsing ID: ", id)
+        # pass
 
         # current_document = current_collection.document(id)
         # current_document.set(entry)
@@ -472,10 +484,10 @@ class first_run_operator:
                 for entry in data:
 
                     id = idm_instance.issue_id(entry, obs_ref, query_metadata)
-                    gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
+                    gb_pipe_manager.get_pipe().commit_general_data(entry, endpoint, id)
 
             elif query["exclusion"] == "identity_head":
-                idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
+                idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH, indicator_length=8)
                 self.__initialize_listener_cache(data[-1])
                 endpoint = query["endpoint"]
                 query_metadata = None
@@ -488,7 +500,7 @@ class first_run_operator:
                 for entry in data:
 
                     id = idm_instance.issue_id(entry, obs_ref, query_metadata)
-                    gb_pipe_manager.get_pipe().commit_data(entry, endpoint, id)
+                    gb_pipe_manager.get_pipe().commit_general_data(entry, endpoint, id)
 
                     # Add the gb id for every identity
                     gb_simple_id = entry[query["relationships"]["id"]]
@@ -505,7 +517,7 @@ class first_run_operator:
                 specific_idms = {}
 
                 for i in range(1, 7):
-                    specific_idms.update({f"{i}" : id_manager("identity_" + piece_type_ref[f"{i}"], ID_CACHE_PATH, SETTINGS_FILE_PATH)})
+                    specific_idms.update({f"{i}" : id_manager("identity_" + piece_type_ref[f"{i}"], ID_CACHE_PATH, SETTINGS_FILE_PATH, indicator_length=4)})
 
                 idm_instance = id_manager(self.__query_name, ID_CACHE_PATH, SETTINGS_FILE_PATH)
                 self.__initialize_listener_cache(data[-1])
@@ -529,7 +541,6 @@ class first_run_operator:
                     parent_identity_id = entry[query["relationships"]["identity_id"]]
                     parent_identity_uid = cache_json["identities"][parent_identity_id]["UID"]
 
-                    # Check if the following returns a string or int
                     piece_type = entry[query["relationships"]["piecetype"]]
 
                     subquery_name = "identity_" + piece_type_ref[piece_type]
@@ -546,11 +557,25 @@ class first_run_operator:
 
                         inner_cache = "identities" + "*" + parent_identity_id + "*" + subquery_name + "*" + "last_" + subquery_name
 
-                        print("IC:" + inner_cache)
+                        # print("IC:" + inner_cache)
 
                         id = specific_idms[piece_type].issue_id(entry, obs_ref, query_metadata, level_path=inner_cache)
-                        # Map for subquery_name - Make more readable on FS
-                        gb_pipe_manager.get_pipe().commit_data(entry, base_endpoint + parent_identity_uid + subquery_name, id)
+                        id_proper = piece_type + "-" + id
+                        # print("IDP:", id_proper)
+
+                        current_collection = gb_pipe_manager.get_pipe().get_fsDB().collection("Identities")
+
+                        # identity_document = current_collection.document(parent_identity_uid)
+                        # piece_subcollection = identity_document.collection(subcollection_ref[piece_type_ref[piece_type]])
+                        # piece_document = piece_subcollection.document(id_proper)
+                        # piece_document.set(piece)
+
+                        if piece_type == "2" or piece_type == "6":
+                            full_id = parent_identity_uid + "-" + id_proper
+                            gb_filename = piece[settings_json["queries"][subquery_name]["relationships"]["filename"]].split(".")
+                            gb_filename[1] = "." + gb_filename[1]
+                            print("\nPID:", full_id, "FILE:", gb_filename)
+                            # pictue = PictureHelper(full_id, gb_filename[0], extension=gb_filename[1])
 
             else:
                 pass
@@ -687,6 +712,7 @@ class listener_operator:
         settings_json = self.__settings_file.read_json()
         for query in settings_json["queries"]:
             query_json = settings_json["queries"][query]
+            # TODO: Correct Length on Indicators
             idm_instance = id_manager(query, ID_CACHE_PATH, self.__settings_path)
             if not query_json["meta"]:
                 meta_dict = get_meta_for_query(query)

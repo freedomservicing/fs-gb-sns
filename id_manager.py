@@ -21,7 +21,8 @@ class id_manager:
     __settings_path = None
     __settings_file = None
 
-    def __init__(self, query_name, id_cache_path="generic_id_cache.json", settings_path="settings.json"):
+    def __init__(self, query_name, id_cache_path="generic_id_cache.json", settings_path="settings.json", indicator_length=5):
+        self.__indicator_length = indicator_length
         self.__query_name = query_name
         self.__id_cache_path = id_cache_path
         self.__id_cache_file = file_manager(self.__id_cache_path, "idm")
@@ -83,12 +84,12 @@ class id_manager:
                     if len(cache_json[query_name]) != 0:
                         obs_id = self.__increment_id(cache_json[query_name][f"last_{observation_reference}"])
                     else:
-                        obs_id = "000001"
+                        obs_id = self.__build_indicator()
                     cache_json[query_name][f"last_{observation_reference}"] = obs_id
                     cache_json[query_name][gb_serial] = {}
                     # cache_json[query_name][gb_serial]["brand"] = machine_brand
                     cache_json[query_name][gb_serial][observation_reference] = cache_json[query_name][f"last_{observation_reference}"]
-                    query_id = "000001"
+                    query_id = self.__build_indicator()
                     cache_json[query_name][gb_serial][f"last_{query_name}"] = query_id
 
                 self.__id_string = obs_id + "-" + query_id
@@ -96,7 +97,7 @@ class id_manager:
                 if query_name in cache_json.keys() and f"last_{query_name}" in cache_json[query_name].keys():
                     new_id = self.__increment_id(cache_json[query_name][f"last_{query_name}"])
                 else:
-                    new_id = "000001"
+                    new_id = self.__build_indicator()
                 self.__id_string = new_id
 
                 if query_name in cache_json:
@@ -106,10 +107,20 @@ class id_manager:
             self.__id_cache_file.write_json(cache_json)
         else: # level_path is not None
             current_id = self.get_data_from_cache_via_path(level_path, delim=delim)
-            inc_id = "000001" if not isinstance(current_id, str) else self.__increment_id(current_id)
+            inc_id = self.__build_indicator() if not isinstance(current_id, str) else self.__increment_id(current_id)
             self.update_cache_file_via_path(f"{delim}".join([level_path,inc_id]), delim=delim)
             return inc_id
         return self.get_full_id_string()
+
+
+    def __build_indicator(self):
+        current_len = self.__indicator_length
+        indicator_string = ""
+        while current_len > 1:
+            indicator_string += "0"
+            current_len -= 1
+        indicator_string += "1"
+        return indicator_string
 
 
     def __increment_id(self, current_id):
