@@ -21,7 +21,10 @@ class PictureHelper:
         # https://cloud.google.com/storage/docs/getting-bucket-information
         # https://console.cloud.google.com/storage/browser?authuser=1&project=fgcomplianceportal&prefix=
         # https://firebase.google.com/docs/reference/node/firebase.app
-        self.__storage = storage.bucket("fgcomplianceportal.appspot.com")
+	try:
+        	self.__storage = storage.bucket("fgcomplianceportal.appspot.com")
+	except:
+		self.__storage = None
         # https://firebase.google.com/docs/storage/web/create-reference#create_a_reference
         self.__storage_ref = self.__storage.ref()
         self.__firebase_folder_ref = None
@@ -58,7 +61,10 @@ class PictureHelper:
     def __handle_pictures(self):
         # https://stackoverflow.com/questions/52883534/firebase-storage-upload-file-python
 
-        blob = self.__storage.blob(self.__firebase_filename)
+	if self.__storage != None:
+        	blob = self.__storage.blob(self.__firebase_filename)
+	else:
+		print("Storage unavailable!")
         with open(self.__gb_filepath) as file_obj:
             self.__firebase_folder_ref.put(file_obj)
             print("Sent a file to firestore:")
