@@ -23,6 +23,7 @@ class PictureHelper:
         # https://firebase.google.com/docs/reference/node/firebase.app
         try:
             self.__storage = storage.bucket("fgcomplianceportal.appspot.com")
+            print(self.__storage)
         except:
             self.__storage = None
         # https://firebase.google.com/docs/storage/web/create-reference#create_a_reference
