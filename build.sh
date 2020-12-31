@@ -24,7 +24,7 @@ read -r -p "Would you like to automagically install all other build deps (apt in
 if [[ "$ubuntuDepsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     echo "----------------------------------------------------------"
-    sudo apt install build-essential fakeroot devscripts debhelper dh-python python3-all dput
+    sudo apt install build-essential fakeroot devscripts debhelper dh-python python3-all python3-pip dput
     echo "----------------------------------------------------------"
 else
     echo "----------------------------------------------------------"
