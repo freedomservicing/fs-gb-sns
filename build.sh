@@ -17,7 +17,7 @@ read -r -p "Would you like to automagically install all python deps? (Y/N)" pyDe
 if [[ "$pyDepsYN" =~ ^([yY][eE][sS]|[yY])$ ]]
 then
     echo "----------------------------------------------------------"
-    pip3 install firebase_admin python_jwt gcloud sseclient pycrypto requests-toolbelt pyinstaller
+    pip3 install firebase_admin python_jwt gcloud sseclient pycrypto requests-toolbelt pyinstaller testresources
     pip3 list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1 | xargs -n1 pip3 install -U 
     echo "----------------------------------------------------------"
 else
