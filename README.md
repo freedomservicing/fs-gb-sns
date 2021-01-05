@@ -1,5 +1,8 @@
 <p align="center"><img src="https://raw.githubusercontent.com/freedomservicing/fs_branding/master/fs/fs_logo.jpg" alt="drawing" width="300"/></p>
 
+# ***SPECIAL NOTE***: THIS HAS BEEN ARCHIVED
+   * For the current repository, click [here](http://repo.freedomgateway.llc/freedomservicing/fs-gb-sns) instead.
+
 # <p align="center"><b>gb_sns</b></p>
 <p align="center"><b><i>Freedom Servicing General Bytes Database Scraper Tool</i></b></p>
 
